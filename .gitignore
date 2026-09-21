@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+results/census/traces/
+*.pt.trace.json.gz
+results/logs/
+.env
+.env.*
+*.pem
+*.key
+id_rsa*
+id_ed25519*
