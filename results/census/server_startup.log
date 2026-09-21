@@ -1,0 +1,11 @@
+INFO 09-21 23:17:26 [scheduler.py:277] Chunked prefill is enabled with max_num_batched_tokens=8192.
+INFO 09-21 23:17:26 [config.py:625] Mamba cache mode is set to 'align' for Qwen3_5ForConditionalGeneration by default when prefix caching is enabled
+INFO 09-21 23:17:26 [vllm.py:1585] Cudagraph is disabled under eager mode
+INFO 09-21 23:17:40 [__init__.py:695] Selected FlashInferFp8DeepGEMMDynamicBlockScaledKernel for Fp8LinearMethod
+INFO 09-21 23:17:40 [qwen_gdn_linear_attn.py:167] Using FlashInfer GDN prefill kernel (requested=auto, head_k_dim=128).
+INFO 09-21 23:17:40 [qwen_gdn_linear_attn.py:519] GDN decode kernel: cuda
+INFO 09-21 23:17:41 [cuda.py:492] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION'].
+INFO 09-21 23:17:41 [flash_attn.py:897] Using FlashAttention version 3
+INFO 09-21 23:17:51 [interface.py:918] Setting attention block size to 784 tokens to ensure that attention page size is >= mamba page size.
+INFO 09-21 23:18:14 [kv_cache_utils.py:2032] GPU KV cache size: 1,400,832 tokens, Maximum concurrency for 32,768 tokens per request: 42.75x
+INFO 09-21 23:20:49 [vllm.py:1585] Cudagraph is disabled under eager mode

@@ -38,7 +38,7 @@ The benchmark shape set is derived from these (grid plus observed percentiles); 
 | Ragged prefill | fixed total new tokens (4096, 16384) over 8, 32, 128 sequences; lengths uniform, 80 to 100% jitter, lognormal (sigma 1.0), bimodal, mixed prefill+decode; fixed seeds |
 | Ragged decode | one new token per sequence; KV lengths uniform, jitter, lognormal, bimodal at equal total KV tokens |
 
-The attention kernel page is 16 tokens, as vLLM configures it for this model; 32, 64 and 128 are measured as a comparison. For GDN the warm case passes a restored recurrent and conv state; the states come from really prefilling 0, 1k and 64k tokens.
+On the H200 vLLM selects FlashAttention 3, which runs directly on the 784 token blocks, so that is the page size measured; 16, 64 and 256 are measured as a comparison. For GDN the warm case passes a restored recurrent and conv state; the states come from really prefilling 0, 1k and 64k tokens.
 
 ### 1.5 Timing and correctness
 

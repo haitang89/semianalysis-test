@@ -1,0 +1,20 @@
+{
+  "attention_backend": "FLASH_ATTN",
+  "attention_candidates": [
+    "FLASH_ATTN",
+    "FLASHINFER",
+    "TRITON_ATTN",
+    "FLEX_ATTENTION"
+  ],
+  "flash_attention_version": 3,
+  "gdn_prefill_kernel": "FlashInfer",
+  "gdn_decode_kernel": "cuda",
+  "fp8_gemm_kernel": "FlashInferFp8DeepGEMMDynamicBlockScaledKernel",
+  "attention_block_tokens": 784,
+  "kernel_block_tokens": null,
+  "mamba_cache_mode": "align",
+  "max_num_batched_tokens": 8192,
+  "kv_cache_tokens": 1400832,
+  "cudagraph_mode": "disabled",
+  "kernel_page_tokens": 784
+}

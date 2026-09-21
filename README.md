@@ -20,7 +20,7 @@ Everything is normalized to ceilings measured on the same GPU (achieved HBM band
 | GDN | 16 key heads, 48 value heads, head_dim 128, conv kernel 4 over 10240 channels |
 | GDN state per sequence per layer | recurrent (48, 128, 128) fp32 = 3 MiB, conv (10240, 3) bf16 |
 | GEMMs as vLLM runs them | GDN `in_proj_qkvz` 5120->16384, `in_proj_ba` 5120->96, `out_proj` 6144->5120; attention `qkv_proj` 5120->14336, `o_proj` 6144->5120; MLP `gate_up_proj` 5120->34816, `down_proj` 17408->5120 |
-| KV cache in vLLM | manager block 784 tokens (prefix cache granularity), attention kernel page 16 tokens |
+| KV cache in vLLM | 784 token blocks; on the H200 FlashAttention 3 runs directly on those blocks |
 
 ## What gets measured
 
@@ -35,7 +35,7 @@ Everything is normalized to ceilings measured on the same GPU (achieved HBM band
 | Regime | Definition |
 |---|---|
 | Cold | no cached tokens; prefill over 128 to 65536 tokens, decode over KV 1k to 128k |
-| Warm, fraction view | context L in multiples of 7840 tokens, cached fraction 0 / 0.5 / 0.9 / 0.99 aligned to 784 token blocks, only the new tokens are computed |
+| Warm, fraction view | context L in multiples of 7840 tokens, cached fraction 0 / 0.5 / 0.9 / 0.99 in whole 784 token blocks, only the new tokens are computed |
 | Warm, fixed new view | 64 / 512 / 2048 new tokens over cached history from 0 to 128k |
 | Ragged prefill | equal total new tokens, lengths uniform / 80 to 100% jitter / lognormal / bimodal / mixed prefill+decode |
 | Ragged decode | one new token per sequence, KV lengths uniform / jitter / lognormal / bimodal at equal total KV |
