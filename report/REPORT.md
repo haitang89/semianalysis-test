@@ -1,4 +1,4 @@
-# Attention and Gated DeltaNet kernels of Qwen3.8-27B on a B300: shapes, warm caches and ragged batches
+# Attention and Gated DeltaNet kernels of Qwen3.8-27B on an H200: shapes, warm caches and ragged batches
 
 Work in progress. The methodology is written, results come on day 2.
 
@@ -8,7 +8,7 @@ Work in progress. The methodology is written, results come on day 2.
 
 | Item | Value |
 |---|---|
-| GPU | 1x NVIDIA B300 SXM6 on Verda, compute capability 10.3 (SM count, clocks and visible memory read on the instance) |
+| GPU | 1x NVIDIA H200 141GB on Verda, compute capability 9.0, 132 SMs, driver 580.178.04, 700 W power limit |
 | Engine | vLLM 0.29.0, CUDA 13 image, digest recorded in `results/env/environment.json` |
 | Kernel libraries | the FlashInfer, Triton and vendored linear attention kernels shipped inside that image |
 | Model | `Qwen/Qwen3.8-27B-FP8`, text path only (`--language-model-only`) |

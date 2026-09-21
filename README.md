@@ -1,6 +1,6 @@
 # qwen27b-kernel-bench
 
-Shape census and kernel level benchmarks for **Qwen3.8-27B** on a single **NVIDIA B300**, with vLLM 0.29 as the engine of record.
+Shape census and kernel level benchmarks for **Qwen3.8-27B** on a single **NVIDIA H200**, with vLLM 0.29 as the engine of record. I planned this for a B300, but Verda had none in stock, so the numbers come from an H200 141GB. The method is the same on any GPU because every ceiling is measured on the device.
 
 Qwen3.8-27B is a hybrid: 48 Gated DeltaNet (GDN) layers and 16 full attention layers. This repo answers three questions about it:
 
@@ -30,7 +30,7 @@ Everything is normalized to ceilings measured on the same GPU (achieved HBM band
 - observed: torch profiler traces from a live vLLM server, once in eager mode (operator shapes) and once in the default compiled CUDA graph mode (the kernels that run in production)
 - real distribution: prefill tokens, decode tokens and sequence count of every engine step under load, with prefix caching off and on
 
-**Kernel benchmarks** of the attention and GDN paths vLLM calls (FlashInfer paged prefill/append and decode, TRT-LLM generated kernels, causal conv1d, chunked gated delta rule, fused recurrent decode), in the same regimes for both mixers:
+**Kernel benchmarks** of the attention and GDN paths vLLM calls (paged prefill, append and decode attention, causal conv1d, chunked gated delta rule, fused recurrent decode), in the same regimes for both mixers:
 
 | Regime | Definition |
 |---|---|
@@ -54,7 +54,7 @@ For GDN, "warm" means a restored fixed size recurrent state. The states are prod
 ## Layout
 
 ```
-bench/core        timer, result schema, sweep runner, regimes, environment record, probes, ceilings
+bench/core        timer, roofline model, nvidia-smi queries, environment record, ceilings, mock hardware
 bench/census      analytic inventory, profiler driver, trace parser, step distribution, shape set
 bench/attention   attention kernel drivers, reference, accounting, runner
 bench/gdn         GDN kernel drivers, reference, accounting, runner
@@ -83,21 +83,21 @@ On the GPU host the benchmarks run inside the pinned vLLM image, so kernel versi
 ```bash
 bash scripts/bootstrap_host.sh
 bash scripts/container.sh start
-bash scripts/container.sh exec python -m bench.core.env
-bash scripts/container.sh exec python -m bench.core.probes
-bash scripts/container.sh exec python -m bench.core.ceilings
-bash scripts/container.sh exec python -m bench.attention.run -c configs/attention_warm.yaml
-bash scripts/container.sh exec python -m bench.gdn.run -c configs/gdn_warm.yaml
+bash scripts/container.sh exec python3 -m bench.core.env
+bash scripts/container.sh exec python3 -m bench.core.probes
+bash scripts/container.sh exec python3 -m bench.core.ceilings
+bash scripts/container.sh exec python3 -m bench.attention.run -c configs/attention_warm.yaml
+bash scripts/container.sh exec python3 -m bench.gdn.run -c configs/gdn_warm.yaml
 ```
 
 Sweeps are resumable: finished points are skipped, `--only <glob>` reruns a subset, `--dry-run` lists the points.
 
 ## Timeline
 
-- **Day 1**: environment and probes on the B300, measured ceilings, analytic census, harness, attention and GDN drivers with numerics checks, sweeps launched overnight.
+- **Day 1**: environment and probes on the GPU, measured ceilings, analytic census, harness, attention and GDN drivers with numerics checks, sweeps launched overnight.
 - **Day 2**: triage, profiler census and step distributions, supporting ops and anchor, figures, report.
 
-If time runs short the cut order is: end to end anchor, TRT-LLM comparison points, the bimodal and mixed ragged distributions, supporting ops. Warm attention versus warm GDN is never cut.
+If time runs short the cut order is: end to end anchor, attention backend comparison points, the bimodal and mixed ragged distributions, supporting ops. Warm attention versus warm GDN is never cut.
 
 ## Status
 
