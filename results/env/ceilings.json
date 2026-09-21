@@ -1,0 +1,128 @@
+{
+  "gpu_name": "NVIDIA H200",
+  "hbm_bw_gbps_measured": 4276.629288608162,
+  "hbm_bw_best": {
+    "op": "copy",
+    "size_gib": 4
+  },
+  "hbm_bw_gbps_vendor": 4800.0,
+  "bf16_tflops_measured": 716.0412929908443,
+  "bf16_tflops_sustained": 672.7446058205425,
+  "fp8_tflops_measured": 1452.098998858186,
+  "bandwidth": [
+    {
+      "op": "copy",
+      "size_gib": 1,
+      "median_us": 508.7999999523163,
+      "min_us": 507.80802965164185,
+      "gbps_peak": 4228.928103939557,
+      "gbps_median": 4220.683270835806,
+      "unstable": false,
+      "path": "tensor.copy_"
+    },
+    {
+      "op": "reduce",
+      "size_gib": 1,
+      "median_us": 310.8000010251999,
+      "min_us": 309.9839985370636,
+      "gbps_peak": 3463.862099551622,
+      "gbps_median": 3454.7677620919326,
+      "unstable": false,
+      "path": "torch.amax"
+    },
+    {
+      "op": "copy",
+      "size_gib": 4,
+      "median_us": 2009.5200538635254,
+      "min_us": 2008.5759162902832,
+      "gbps_peak": 4276.629288608162,
+      "gbps_median": 4274.619989725854,
+      "unstable": false,
+      "path": "tensor.copy_"
+    },
+    {
+      "op": "reduce",
+      "size_gib": 4,
+      "median_us": 1201.919972896576,
+      "min_us": 1200.3200054168701,
+      "gbps_peak": 3578.1852144573413,
+      "gbps_median": 3573.4220188132094,
+      "unstable": false,
+      "path": "torch.amax"
+    },
+    {
+      "op": "copy",
+      "size_gib": 16,
+      "median_us": 8038.943767547607,
+      "min_us": 8036.800384521484,
+      "gbps_peak": 4275.300707253512,
+      "gbps_median": 4274.160805391717,
+      "unstable": false,
+      "path": "tensor.copy_"
+    },
+    {
+      "op": "reduce",
+      "size_gib": 16,
+      "median_us": 4806.480169296265,
+      "min_us": 4804.671764373779,
+      "gbps_peak": 3575.659280491797,
+      "gbps_median": 3574.313963416471,
+      "unstable": false,
+      "path": "torch.amax"
+    }
+  ],
+  "gemm": {
+    "bf16": {
+      "dtype": "bf16",
+      "shape": {
+        "tokens": 16384,
+        "out_features": 34816,
+        "in_features": 5120
+      },
+      "median_us": 8548.640251159668,
+      "min_us": 8157.567977905273,
+      "tflops_peak": 716.0412929908443,
+      "tflops_median": 683.2847506675248,
+      "unstable": false,
+      "path": "torch.mm"
+    },
+    "fp8": {
+      "dtype": "fp8",
+      "shape": {
+        "tokens": 16384,
+        "out_features": 34816,
+        "in_features": 5120
+      },
+      "median_us": 4645.792007446289,
+      "min_us": 4022.5601196289062,
+      "tflops_peak": 1452.098998858186,
+      "tflops_median": 1257.3002650996384,
+      "unstable": false,
+      "path": "torch._scaled_mm, per tensor scale"
+    }
+  },
+  "clocks": {
+    "samples": 5,
+    "sm_clock_median_mhz": 1440.0,
+    "sm_clock_max_mhz": 1980.0,
+    "sm_clock_ratio": 0.7272727272727273,
+    "power_median_w": 692.6,
+    "power_limit_w": 700.0,
+    "temp_median_c": 57.0,
+    "power_capped": true,
+    "throttled": false
+  },
+  "throttled": false,
+  "power_capped": true,
+  "timing": {
+    "warmup": 5,
+    "repeats": 20
+  },
+  "source": {
+    "environment_hash": "0f0a27db0bbf9a0a",
+    "git_sha": "0e90436dd370777c9c5b79063ed921df2fe7e04e",
+    "git_dirty": false,
+    "image_digest": "sha256:c2914767605584b6d8f45686b82de173ecc99e781897aa3d0a66dacd72c51ae1",
+    "collected_at": "2026-09-21T23:14:46+00:00"
+  }
+}
