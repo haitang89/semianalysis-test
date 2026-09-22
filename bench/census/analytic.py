@@ -153,6 +153,10 @@ def inventory(g: Geometry) -> list[Op]:
            n_gdn, flops_per_token=8.0 * g.gdn_v_heads * g.gdn_head_dim * g.gdn_head_dim,
            note="chunked kernel for prefill, recurrent kernel for decode; state is fixed size"),
         Op("gdn", "gated_rmsnorm", "rmsnorm", "bf16", f"[M, {g.gdn_value_dim}] gated by z", n_gdn, g.gdn_value_dim * BF16_BYTES),
+        Op("gdn", "state_gather", "gather", "fp32", f"[B, {g.gdn_v_heads}, {g.gdn_head_dim}, {g.gdn_head_dim}] from the state pool", n_gdn,
+           note="eager prefill path reads the initial state of every sequence before the chunked kernel"),
+        Op("gdn", "state_checkpoint", "copy", "fp32", "recurrent and conv states copied at block boundaries", 1,
+           note="prefix caching in align mode; one fused kernel per step for all layers"),
         gemm("gdn", "out_proj", g.hidden, g.gdn_value_dim, n_gdn, proj),
         Op("head", "final_norm", "rmsnorm", "bf16", f"[M, {g.hidden}]", 1, g.hidden * BF16_BYTES),
         gemm("head", "lm_head", g.vocab, g.hidden, 1, "bf16", note="only the last token of each sequence"),
@@ -160,7 +164,7 @@ def inventory(g: Geometry) -> list[Op]:
     if g.fp8_weights:
         ops.append(Op("every_layer", "fp8_activation_quant", "quantize", "fp8",
                       "[M, K] bf16 -> fp8 with per token group scales, before each FP8 GEMM",
-                      3 * n_gdn + 2 * n_attn + 2 * n_all))
+                      2 * n_gdn + 2 * n_attn + 2 * n_all))
     if g.mtp_layers:
         ops.append(gemm("mtp", "mtp_fc", g.hidden, 2 * g.hidden, 0, "bf16", note="speculative decoding only"))
     return ops

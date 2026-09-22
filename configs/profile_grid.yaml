@@ -1,0 +1,13 @@
+points:
+  - {label: prefill_128, kind: prefill, tokens: 128, batch: 1, max_tokens: 1}
+  - {label: prefill_1024, kind: prefill, tokens: 1024, batch: 1, max_tokens: 1}
+  - {label: prefill_4096, kind: prefill, tokens: 4096, batch: 1, max_tokens: 1}
+  - {label: prefill_16384, kind: prefill, tokens: 16384, batch: 1, max_tokens: 1}
+  - {label: prefill_1024_x8, kind: prefill, tokens: 1024, batch: 8, max_tokens: 1}
+  - {label: decode_1k_x1, kind: decode, kv: 1024, batch: 1, max_tokens: 16}
+  - {label: decode_1k_x8, kind: decode, kv: 1024, batch: 8, max_tokens: 16}
+  - {label: decode_1k_x64, kind: decode, kv: 1024, batch: 64, max_tokens: 16}
+  - {label: decode_1k_x256, kind: decode, kv: 1024, batch: 256, max_tokens: 16}
+  - {label: decode_16k_x1, kind: decode, kv: 16384, batch: 1, max_tokens: 16}
+  - {label: decode_16k_x8, kind: decode, kv: 16384, batch: 8, max_tokens: 16}
+  - {label: decode_16k_x64, kind: decode, kv: 16384, batch: 64, max_tokens: 16}

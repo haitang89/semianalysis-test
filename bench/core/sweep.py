@@ -82,8 +82,8 @@ def _label(params: dict) -> str:
     return "_".join(f"{key}={value}" for key, value in params.items() if key != "backend")
 
 
-class PointTimeout(Exception):
-    pass
+class PointTimeout(BaseException):
+    """Not an Exception on purpose: a driver's own error handling must not swallow the alarm."""
 
 
 def _with_timeout(seconds: float, call: Callable[[], object]) -> object:

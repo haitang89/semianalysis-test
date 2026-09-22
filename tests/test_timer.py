@@ -1,6 +1,7 @@
 import pytest
 
 from bench.core.mock import ModelClock
+from bench.core.sweep import PointTimeout
 from bench.core.timer import TimingConfig, percentile, time_kernel
 
 
@@ -62,3 +63,15 @@ def test_graph_mode_always_and_never_override_the_threshold():
 def test_flush_mode_is_recorded():
     timing = time_kernel(noop, TimingConfig(), ModelClock(latency_us=5000.0, flushes_l2=True))
     assert timing.l2_flush is True
+
+
+class AlarmClock(ModelClock):
+    def measure_graph(self, kernel, warmup, repeats):
+        raise PointTimeout("point exceeded 1 s")
+
+
+def test_point_timeout_inside_graph_capture_is_not_swallowed():
+    clock = AlarmClock(latency_us=20.0, noise=0.0)
+    with pytest.raises(PointTimeout):
+        time_kernel(noop, TimingConfig(warmup=1, repeats=3, graph_mode="always"), clock)
+

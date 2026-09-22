@@ -21,8 +21,10 @@
 | gdn | post_conv_prep | elementwise | bf16 | split [M, 10240] -> q,k [M, 16, 128], v [M, 48, 128]; l2norm; gates from a, b | 48 | 0.0 |
 | gdn | gated_delta_rule | linear_attention | bf16 | q,k [M, 16, 128], v [M, 48, 128], state [B, 48, 128, 128] fp32 | 48 |  |
 | gdn | gated_rmsnorm | rmsnorm | bf16 | [M, 6144] gated by z | 48 | 0.0 |
+| gdn | state_gather | gather | fp32 | [B, 48, 128, 128] from the state pool | 48 |  |
+| gdn | state_checkpoint | copy | fp32 | recurrent and conv states copied at block boundaries | 1 |  |
 | gdn | out_proj | gemm | fp8 | [M, 6144] x [6144, 5120] -> [M, 5120] | 48 | 30.0 |
 | head | final_norm | rmsnorm | bf16 | [M, 5120] | 1 | 0.0 |
 | head | lm_head | gemm | bf16 | [M, 5120] x [5120, 248320] -> [M, 248320] | 1 | 2425.0 |
-| every_layer | fp8_activation_quant | quantize | fp8 | [M, K] bf16 -> fp8 with per token group scales, before each FP8 GEMM | 304 |  |
+| every_layer | fp8_activation_quant | quantize | fp8 | [M, K] bf16 -> fp8 with per token group scales, before each FP8 GEMM | 256 |  |
 | mtp | mtp_fc | gemm | bf16 | [M, 10240] x [10240, 5120] -> [M, 5120] | 0 | 100.0 |

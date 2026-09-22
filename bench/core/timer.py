@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import math
+import time
 from dataclasses import asdict, dataclass
 from typing import Callable, Optional, Protocol, Sequence
 
@@ -124,20 +125,29 @@ def time_kernel(kernel: Kernel, config: TimingConfig, clock: Clock) -> Timing:
 
 
 class CudaClock:
-    """Times with CUDA events and synchronizes once per batch of repeats."""
+    """Times with CUDA events and synchronizes once per batch of repeats.
 
-    def __init__(self, l2_flush_bytes: int = 0):
+    Calls that take longer than sync_each_above_s in the warmup are synchronized one by
+    one instead, so that the host gets control between them and the point timeout
+    can fire; at that duration the per call synchronize is noise.
+    """
+
+    def __init__(self, l2_flush_bytes: int = 0, sync_each_above_s: float = 0.1):
         import torch
 
         self._torch = torch
         self.flushes_l2 = l2_flush_bytes > 0
         self._flush = torch.empty(l2_flush_bytes, dtype=torch.uint8, device="cuda") if self.flushes_l2 else None
+        self.sync_each_above_s = sync_each_above_s
 
     def measure(self, kernel: Kernel, warmup: int, repeats: int) -> list[float]:
         torch = self._torch
+        torch.cuda.synchronize()
+        began = time.perf_counter()
         for _ in range(warmup):
             kernel()
         torch.cuda.synchronize()
+        slow = warmup > 0 and (time.perf_counter() - began) / warmup > self.sync_each_above_s
         starts = [torch.cuda.Event(enable_timing=True) for _ in range(repeats)]
         ends = [torch.cuda.Event(enable_timing=True) for _ in range(repeats)]
         for start, end in zip(starts, ends):
@@ -146,6 +156,8 @@ class CudaClock:
             start.record()
             kernel()
             end.record()
+            if slow:
+                torch.cuda.synchronize()
         torch.cuda.synchronize()
         return [start.elapsed_time(end) * 1000.0 for start, end in zip(starts, ends)]
 

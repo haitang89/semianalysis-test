@@ -10,7 +10,7 @@ build_args() {
   local digest sha dirty=0
   digest="$(docker inspect -f '{{index .RepoDigests 0}}' "$IMAGE" 2>/dev/null | sed 's/.*@//' || true)"
   sha="$(git -C "$ROOT" rev-parse HEAD 2>/dev/null || true)"
-  if [ -n "$(git -C "$ROOT" status --porcelain 2>/dev/null)" ]; then dirty=1; fi
+  if [ -n "$(git -C "$ROOT" status --porcelain --untracked-files=no 2>/dev/null)" ]; then dirty=1; fi
   args=(
     --name "$NAME" --gpus all --network host --ipc host
     -v "$ROOT:/work" -v "$HF_CACHE:/root/.cache/huggingface"

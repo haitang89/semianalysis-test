@@ -52,7 +52,7 @@ def test_per_step_counts(ops):
 def test_dtypes_follow_the_fp8_checkpoint(ops):
     assert ops["gate_up_proj"].dtype == "fp8" and ops["qkv_proj"].dtype == "fp8" and ops["in_proj_qkvz"].dtype == "fp8"
     assert ops["in_proj_ba"].dtype == "bf16" and ops["lm_head"].dtype == "bf16"
-    assert ops["fp8_activation_quant"].per_step == 3 * 48 + 2 * 16 + 2 * 64
+    assert ops["fp8_activation_quant"].per_step == 2 * 48 + 2 * 16 + 2 * 64
 
 
 CHECKPOINT_BYTES = 30.88e9

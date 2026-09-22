@@ -1,0 +1,677 @@
+{
+  "ops": [
+    {
+      "op": "embed_tokens",
+      "block": "embedding",
+      "expected_per_step": 1,
+      "in_inventory": true,
+      "observed": true,
+      "kernels": [
+        "void at::native::",
+        "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_k",
+        "void at::native::vectorized_gather_kernel<16, long>"
+      ],
+      "observed_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 2.0,
+        "eager: execute_context_1(217)_generation_0(0)": 2.0,
+        "eager: execute_context_1(784)_generation_0(0)": 2.0
+      },
+      "total_us_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 3.2,
+        "eager: execute_context_1(217)_generation_0(0)": 3.9,
+        "eager: execute_context_1(784)_generation_0(0)": 6.0
+      }
+    },
+    {
+      "op": "input_layernorm",
+      "block": "every_layer",
+      "expected_per_step": 64,
+      "in_inventory": true,
+      "observed": true,
+      "kernels": [
+        "void at::native::elementwise_kernel<128, 2, at::native::gpu_kernel_imp",
+        "void at::native::reduce_kernel<512, 1, at::native::ReduceOp<float, at:",
+        "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_k",
+        "void at::native::vectorized_elementwise_kernel<4, at::native::",
+        "void at::native::vectorized_elementwise_kernel<4, at::native::BinaryFu",
+        "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunc",
+        "void at::native::vectorized_elementwise_kernel<4, at::native::rsqrt_ke",
+        "void at::native::vectorized_elementwise_kernel<8, at::native::bfloat16"
+      ],
+      "observed_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 418.5,
+        "eager: execute_context_1(217)_generation_0(0)": 418.5,
+        "eager: execute_context_1(784)_generation_0(0)": 418.5
+      },
+      "total_us_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 677.6,
+        "eager: execute_context_1(217)_generation_0(0)": 1513.8,
+        "eager: execute_context_1(784)_generation_0(0)": 2952.7
+      }
+    },
+    {
+      "op": "post_attention_layernorm",
+      "block": "every_layer",
+      "expected_per_step": 64,
+      "in_inventory": true,
+      "observed": true,
+      "kernels": [
+        "void at::native::elementwise_kernel<128, 2, at::native::gpu_kernel_imp",
+        "void at::native::reduce_kernel<512, 1, at::native::ReduceOp<float, at:",
+        "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_k",
+        "void at::native::vectorized_elementwise_kernel<4, at::native::",
+        "void at::native::vectorized_elementwise_kernel<4, at::native::BinaryFu",
+        "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunc",
+        "void at::native::vectorized_elementwise_kernel<4, at::native::rsqrt_ke",
+        "void at::native::vectorized_elementwise_kernel<8, at::native::bfloat16"
+      ],
+      "observed_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 418.5,
+        "eager: execute_context_1(217)_generation_0(0)": 418.5,
+        "eager: execute_context_1(784)_generation_0(0)": 418.5
+      },
+      "total_us_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 677.6,
+        "eager: execute_context_1(217)_generation_0(0)": 1513.8,
+        "eager: execute_context_1(784)_generation_0(0)": 2952.7
+      }
+    },
+    {
+      "op": "residual_add",
+      "block": "every_layer",
+      "expected_per_step": 128,
+      "in_inventory": true,
+      "observed": true,
+      "kernels": [
+        "void at::native::elementwise_kernel<128, 2, at::native::gpu_kernel_imp",
+        "void at::native::reduce_kernel<512, 1, at::native::ReduceOp<float, at:",
+        "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_k",
+        "void at::native::vectorized_elementwise_kernel<4, at::native::",
+        "void at::native::vectorized_elementwise_kernel<4, at::native::BinaryFu",
+        "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunc",
+        "void at::native::vectorized_elementwise_kernel<4, at::native::rsqrt_ke",
+        "void at::native::vectorized_elementwise_kernel<8, at::native::bfloat16"
+      ],
+      "observed_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 418.5,
+        "eager: execute_context_1(217)_generation_0(0)": 418.5,
+        "eager: execute_context_1(784)_generation_0(0)": 418.5
+      },
+      "total_us_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 677.6,
+        "eager: execute_context_1(217)_generation_0(0)": 1513.8,
+        "eager: execute_context_1(784)_generation_0(0)": 2952.7
+      }
+    },
+    {
+      "op": "gate_up_proj",
+      "block": "mlp",
+      "expected_per_step": 64,
+      "in_inventory": true,
+      "observed": true,
+      "kernels": [
+        "void deep_gemm::fp8_gemm_kernel_swapAB<34816u, 5120u, 128u, 16u, 128u,",
+        "void deep_gemm::sm90_fp8_gemm_1d2d_impl<"
+      ],
+      "observed_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 64.0,
+        "eager: execute_context_1(217)_generation_0(0)": 64.0,
+        "eager: execute_context_1(784)_generation_0(0)": 64.0
+      },
+      "total_us_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 3176.8,
+        "eager: execute_context_1(217)_generation_0(0)": 4928.8,
+        "eager: execute_context_1(784)_generation_0(0)": 15752.0
+      }
+    },
+    {
+      "op": "silu_and_mul",
+      "block": "mlp",
+      "expected_per_step": 64,
+      "in_inventory": true,
+      "observed": true,
+      "kernels": [
+        "void vllm::act_and_mul_kernel<c10::BFloat16, __nv_bfloat162, &"
+      ],
+      "observed_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 64.0,
+        "eager: execute_context_1(217)_generation_0(0)": 64.0,
+        "eager: execute_context_1(784)_generation_0(0)": 64.0
+      },
+      "total_us_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 299.1,
+        "eager: execute_context_1(217)_generation_0(0)": 656.8,
+        "eager: execute_context_1(784)_generation_0(0)": 1474.7
+      }
+    },
+    {
+      "op": "down_proj",
+      "block": "mlp",
+      "expected_per_step": 64,
+      "in_inventory": true,
+      "observed": true,
+      "kernels": [
+        "void deep_gemm::fp8_gemm_kernel_swapAB<5120u, 17408u, 128u, 16u, 128u,",
+        "void deep_gemm::sm90_fp8_gemm_1d2d_impl<"
+      ],
+      "observed_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 64.0,
+        "eager: execute_context_1(217)_generation_0(0)": 64.0,
+        "eager: execute_context_1(784)_generation_0(0)": 64.0
+      },
+      "total_us_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 1729.6,
+        "eager: execute_context_1(217)_generation_0(0)": 2915.2,
+        "eager: execute_context_1(784)_generation_0(0)": 9492.6
+      }
+    },
+    {
+      "op": "qkv_proj",
+      "block": "attention",
+      "expected_per_step": 16,
+      "in_inventory": true,
+      "observed": true,
+      "kernels": [
+        "void deep_gemm::fp8_gemm_kernel_swapAB<14336u, 5120u, 128u, 16u, 128u,",
+        "void deep_gemm::sm90_fp8_gemm_1d2d_impl<"
+      ],
+      "observed_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 16.0,
+        "eager: execute_context_1(217)_generation_0(0)": 16.0,
+        "eager: execute_context_1(784)_generation_0(0)": 16.0
+      },
+      "total_us_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 321.6,
+        "eager: execute_context_1(217)_generation_0(0)": 620.6,
+        "eager: execute_context_1(784)_generation_0(0)": 1623.4
+      }
+    },
+    {
+      "op": "q_norm",
+      "block": "attention",
+      "expected_per_step": 16,
+      "in_inventory": true,
+      "observed": true,
+      "kernels": [
+        "_fused_qk_rmsnorm_rope_gate_kernel"
+      ],
+      "observed_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 5.3,
+        "eager: execute_context_1(217)_generation_0(0)": 5.3,
+        "eager: execute_context_1(784)_generation_0(0)": 5.3
+      },
+      "total_us_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 12.6,
+        "eager: execute_context_1(217)_generation_0(0)": 40.0,
+        "eager: execute_context_1(784)_generation_0(0)": 125.7
+      }
+    },
+    {
+      "op": "k_norm",
+      "block": "attention",
+      "expected_per_step": 16,
+      "in_inventory": true,
+      "observed": true,
+      "kernels": [
+        "_fused_qk_rmsnorm_rope_gate_kernel"
+      ],
+      "observed_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 5.3,
+        "eager: execute_context_1(217)_generation_0(0)": 5.3,
+        "eager: execute_context_1(784)_generation_0(0)": 5.3
+      },
+      "total_us_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 12.6,
+        "eager: execute_context_1(217)_generation_0(0)": 40.0,
+        "eager: execute_context_1(784)_generation_0(0)": 125.7
+      }
+    },
+    {
+      "op": "rotary",
+      "block": "attention",
+      "expected_per_step": 16,
+      "in_inventory": true,
+      "observed": true,
+      "kernels": [
+        "_fused_qk_rmsnorm_rope_gate_kernel"
+      ],
+      "observed_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 5.3,
+        "eager: execute_context_1(217)_generation_0(0)": 5.3,
+        "eager: execute_context_1(784)_generation_0(0)": 5.3
+      },
+      "total_us_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 12.6,
+        "eager: execute_context_1(217)_generation_0(0)": 40.0,
+        "eager: execute_context_1(784)_generation_0(0)": 125.7
+      }
+    },
+    {
+      "op": "kv_cache_write",
+      "block": "attention",
+      "expected_per_step": 16,
+      "in_inventory": true,
+      "observed": true,
+      "kernels": [
+        "_apply_write_kernel",
+        "_compute_slot_mappings_kernel",
+        "_gather_block_tables_kernel",
+        "_zero_kv_blocks_kernel",
+        "void vllm::reshape_and_cache_flash_kernel<__nv_bfloat16, __nv_bfloat16"
+      ],
+      "observed_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 18.0,
+        "eager: execute_context_1(217)_generation_0(0)": 20.0,
+        "eager: execute_context_1(784)_generation_0(0)": 24.0
+      },
+      "total_us_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 40.0,
+        "eager: execute_context_1(217)_generation_0(0)": 65.4,
+        "eager: execute_context_1(784)_generation_0(0)": 125.5
+      }
+    },
+    {
+      "op": "attention",
+      "block": "attention",
+      "expected_per_step": 16,
+      "in_inventory": true,
+      "observed": true,
+      "kernels": [
+        "void cutlass::device_kernel<flash::FlashAttnFwdCombine<cute::tuple<cut",
+        "void cutlass::device_kernel<flash::enable_sm90_or_later<flash::FlashAt",
+        "void flash::prepare_varlen_num_blocks_kernel<1, false>"
+      ],
+      "observed_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 33.0,
+        "eager: execute_context_1(217)_generation_0(0)": 33.0,
+        "eager: execute_context_1(784)_generation_0(0)": 17.0
+      },
+      "total_us_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 227.7,
+        "eager: execute_context_1(217)_generation_0(0)": 576.8,
+        "eager: execute_context_1(784)_generation_0(0)": 464.7
+      }
+    },
+    {
+      "op": "output_gate",
+      "block": "attention",
+      "expected_per_step": 16,
+      "in_inventory": true,
+      "observed": true,
+      "kernels": [
+        "void ",
+        "void at::native::_scatter_gather_elementwise_kernel<128, 8, at::native",
+        "void at::native::elementwise_kernel<128, 2, at::native::gpu_kernel_imp",
+        "void at::native::unrolled_elementwise_kernel<at::native::CUDAFunctor_a",
+        "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_k",
+        "void at::native::vectorized_elementwise_kernel<4, at::native::",
+        "void at::native::vectorized_elementwise_kernel<4, at::native::BUnaryFu",
+        "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunc",
+        "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunc",
+        "void at::native::vectorized_elementwise_kernel<8, at::native::BinaryFu",
+        "void at::native::vectorized_elementwise_kernel<8, at::native::compare_",
+        "void at::native::vectorized_elementwise_kernel<8, at::native::sigmoid_"
+      ],
+      "observed_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 53.0,
+        "eager: execute_context_1(217)_generation_0(0)": 103.0,
+        "eager: execute_context_1(784)_generation_0(0)": 87.0
+      },
+      "total_us_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 64.1,
+        "eager: execute_context_1(217)_generation_0(0)": 171.7,
+        "eager: execute_context_1(784)_generation_0(0)": 254.7
+      }
+    },
+    {
+      "op": "o_proj",
+      "block": "attention",
+      "expected_per_step": 16,
+      "in_inventory": true,
+      "observed": true,
+      "kernels": [
+        "void deep_gemm::fp8_gemm_kernel_swapAB<5120u, 6144u, 128u, 16u, 128u, ",
+        "void deep_gemm::sm90_fp8_gemm_1d2d_impl<"
+      ],
+      "observed_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 16.0,
+        "eager: execute_context_1(217)_generation_0(0)": 16.0,
+        "eager: execute_context_1(784)_generation_0(0)": 16.0
+      },
+      "total_us_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 183.0,
+        "eager: execute_context_1(217)_generation_0(0)": 305.2,
+        "eager: execute_context_1(784)_generation_0(0)": 895.1
+      }
+    },
+    {
+      "op": "in_proj_qkvz",
+      "block": "gdn",
+      "expected_per_step": 48,
+      "in_inventory": true,
+      "observed": true,
+      "kernels": [
+        "void deep_gemm::fp8_gemm_kernel_swapAB<16384u, 5120u, 128u, 16u, 128u,",
+        "void deep_gemm::sm90_fp8_gemm_1d2d_impl<"
+      ],
+      "observed_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 48.0,
+        "eager: execute_context_1(217)_generation_0(0)": 48.0,
+        "eager: execute_context_1(784)_generation_0(0)": 48.0
+      },
+      "total_us_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 1064.7,
+        "eager: execute_context_1(217)_generation_0(0)": 1772.2,
+        "eager: execute_context_1(784)_generation_0(0)": 5849.9
+      }
+    },
+    {
+      "op": "in_proj_ba",
+      "block": "gdn",
+      "expected_per_step": 48,
+      "in_inventory": true,
+      "observed": true,
+      "kernels": [
+        "nvjet_sm90_tst_32x64_64x16_1x2_h_bz_splitK_TNN",
+        "nvjet_sm90_tst_64x16_64x16_2x4_h_bz_splitK_TNT",
+        "nvjet_sm90_tst_64x8_64x16_2x1_v_bz_splitK_TNT",
+        "void cublasLt::splitKreduce_kernel<32, 16, int, float, __nv_bfloat16, "
+      ],
+      "observed_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 96.0,
+        "eager: execute_context_1(217)_generation_0(0)": 96.0,
+        "eager: execute_context_1(784)_generation_0(0)": 96.0
+      },
+      "total_us_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 294.0,
+        "eager: execute_context_1(217)_generation_0(0)": 347.1,
+        "eager: execute_context_1(784)_generation_0(0)": 421.2
+      }
+    },
+    {
+      "op": "causal_conv1d",
+      "block": "gdn",
+      "expected_per_step": 48,
+      "in_inventory": true,
+      "observed": true,
+      "kernels": [
+        "_causal_conv1d_fwd_kernel",
+        "_causal_conv1d_update_kernel"
+      ],
+      "observed_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 48.0,
+        "eager: execute_context_1(217)_generation_0(0)": 48.0,
+        "eager: execute_context_1(784)_generation_0(0)": 48.0
+      },
+      "total_us_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 115.3,
+        "eager: execute_context_1(217)_generation_0(0)": 343.4,
+        "eager: execute_context_1(784)_generation_0(0)": 863.5
+      }
+    },
+    {
+      "op": "post_conv_prep",
+      "block": "gdn",
+      "expected_per_step": 48,
+      "in_inventory": true,
+      "observed": true,
+      "kernels": [
+        "_fused_post_conv_kernel",
+        "precopy_mamba_align_fused_kernel",
+        "void at::native::elementwise_kernel<128, 2, at::native::gpu_kernel_imp",
+        "void at::native::elementwise_kernel<128, 4, at::native::gpu_kernel_imp",
+        "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_k",
+        "void at::native::vectorized_elementwise_kernel<4, at::native::exp_kern",
+        "void at::native::vectorized_elementwise_kernel<8, at::native::FillFunc",
+        "void at::native::vectorized_elementwise_kernel<8, at::native::bitwise_"
+      ],
+      "observed_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 49.0,
+        "eager: execute_context_1(217)_generation_0(0)": 625.0,
+        "eager: execute_context_1(784)_generation_0(0)": 529.0
+      },
+      "total_us_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 39.7,
+        "eager: execute_context_1(217)_generation_0(0)": 1452.2,
+        "eager: execute_context_1(784)_generation_0(0)": 1959.7
+      }
+    },
+    {
+      "op": "gated_delta_rule",
+      "block": "gdn",
+      "expected_per_step": 48,
+      "in_inventory": true,
+      "observed": true,
+      "kernels": [
+        "fused_recurrent_gated_delta_rule_packed_decode_kernel",
+        "kernel_cutlass_kernel_flashinfergdn_kernelsdelta_rule_dsldelta_rule_cp"
+      ],
+      "observed_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 48.0,
+        "eager: execute_context_1(217)_generation_0(0)": 192.0,
+        "eager: execute_context_1(784)_generation_0(0)": 192.0
+      },
+      "total_us_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 270.8,
+        "eager: execute_context_1(217)_generation_0(0)": 2499.5,
+        "eager: execute_context_1(784)_generation_0(0)": 3631.7
+      }
+    },
+    {
+      "op": "gated_rmsnorm",
+      "block": "gdn",
+      "expected_per_step": 48,
+      "in_inventory": true,
+      "observed": true,
+      "kernels": [
+        "layer_norm_fwd_kernel"
+      ],
+      "observed_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 48.0,
+        "eager: execute_context_1(217)_generation_0(0)": 48.0,
+        "eager: execute_context_1(784)_generation_0(0)": 48.0
+      },
+      "total_us_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 73.5,
+        "eager: execute_context_1(217)_generation_0(0)": 180.3,
+        "eager: execute_context_1(784)_generation_0(0)": 389.8
+      }
+    },
+    {
+      "op": "state_gather",
+      "block": "gdn",
+      "expected_per_step": 48,
+      "in_inventory": true,
+      "observed": true,
+      "kernels": [
+        "void at::native::index_elementwise_kernel<128, 4, at::native::gpu_inde"
+      ],
+      "observed_per_step": {
+        "eager: execute_context_1(217)_generation_0(0)": 96.0,
+        "eager: execute_context_1(784)_generation_0(0)": 96.0
+      },
+      "total_us_per_step": {
+        "eager: execute_context_1(217)_generation_0(0)": 489.3,
+        "eager: execute_context_1(784)_generation_0(0)": 512.6
+      }
+    },
+    {
+      "op": "state_checkpoint",
+      "block": "gdn",
+      "expected_per_step": 1,
+      "in_inventory": true,
+      "observed": true,
+      "kernels": [
+        "postprocess_mamba_fused_kernel",
+        "preprocess_mamba_align_fused_kernel"
+      ],
+      "observed_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 1.0,
+        "eager: execute_context_1(217)_generation_0(0)": 1.0,
+        "eager: execute_context_1(784)_generation_0(0)": 1.0,
+        "eager: outside_step": 9.0
+      },
+      "total_us_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 1.5,
+        "eager: execute_context_1(217)_generation_0(0)": 1.5,
+        "eager: execute_context_1(784)_generation_0(0)": 1.6,
+        "eager: outside_step": 20.2
+      }
+    },
+    {
+      "op": "out_proj",
+      "block": "gdn",
+      "expected_per_step": 48,
+      "in_inventory": true,
+      "observed": true,
+      "kernels": [
+        "void deep_gemm::fp8_gemm_kernel_swapAB<5120u, 6144u, 128u, 16u, 128u, ",
+        "void deep_gemm::sm90_fp8_gemm_1d2d_impl<"
+      ],
+      "observed_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 48.0,
+        "eager: execute_context_1(217)_generation_0(0)": 48.0,
+        "eager: execute_context_1(784)_generation_0(0)": 48.0
+      },
+      "total_us_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 545.5,
+        "eager: execute_context_1(217)_generation_0(0)": 928.7,
+        "eager: execute_context_1(784)_generation_0(0)": 2678.8
+      }
+    },
+    {
+      "op": "final_norm",
+      "block": "head",
+      "expected_per_step": 1,
+      "in_inventory": true,
+      "observed": true,
+      "kernels": [
+        "void at::native::elementwise_kernel<128, 2, at::native::gpu_kernel_imp",
+        "void at::native::reduce_kernel<512, 1, at::native::ReduceOp<float, at:",
+        "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_k",
+        "void at::native::vectorized_elementwise_kernel<4, at::native::",
+        "void at::native::vectorized_elementwise_kernel<4, at::native::BinaryFu",
+        "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunc",
+        "void at::native::vectorized_elementwise_kernel<4, at::native::rsqrt_ke",
+        "void at::native::vectorized_elementwise_kernel<8, at::native::bfloat16"
+      ],
+      "observed_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 418.5,
+        "eager: execute_context_1(217)_generation_0(0)": 418.5,
+        "eager: execute_context_1(784)_generation_0(0)": 418.5
+      },
+      "total_us_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 677.6,
+        "eager: execute_context_1(217)_generation_0(0)": 1513.8,
+        "eager: execute_context_1(784)_generation_0(0)": 2952.7
+      }
+    },
+    {
+      "op": "lm_head",
+      "block": "head",
+      "expected_per_step": 1,
+      "in_inventory": true,
+      "observed": true,
+      "kernels": [
+        "nvjet_sm90_tst_512x8_64x3_2x1_v_bz_TNT"
+      ],
+      "observed_per_step": {
+        "eager: outside_step": 9.0
+      },
+      "total_us_per_step": {
+        "eager: outside_step": 5315.9
+      }
+    },
+    {
+      "op": "fp8_activation_quant",
+      "block": "every_layer",
+      "expected_per_step": 256,
+      "in_inventory": true,
+      "observed": true,
+      "kernels": [
+        "void at::native::elementwise_kernel<128, 2, at::native::gpu_kernel_imp",
+        "void per_token_group_quant_8bit_kernel<c10::BFloat16, c10::Float8_e4m3",
+        "void tensorrt_llm::kernels::fp8_blockscale_gemm::scale_1x128_kernel<__"
+      ],
+      "observed_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 256.0,
+        "eager: execute_context_1(217)_generation_0(0)": 384.0,
+        "eager: execute_context_1(784)_generation_0(0)": 256.0
+      },
+      "total_us_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 383.5,
+        "eager: execute_context_1(217)_generation_0(0)": 1745.7,
+        "eager: execute_context_1(784)_generation_0(0)": 4463.8
+      }
+    },
+    {
+      "op": "mtp_fc",
+      "block": "mtp",
+      "expected_per_step": 0,
+      "in_inventory": true,
+      "observed": false,
+      "kernels": [],
+      "observed_per_step": {},
+      "total_us_per_step": {}
+    },
+    {
+      "op": "engine work outside the model",
+      "block": "engine",
+      "expected_per_step": null,
+      "in_inventory": false,
+      "observed": true,
+      "kernels": [
+        "_combine_sampled_and_draft_tokens_kernel",
+        "_get_num_sampled_and_rejected_kernel",
+        "_gumbel_sample_kernel",
+        "_post_update_kernel",
+        "_prepare_pos_seq_lens_kernel",
+        "_prepare_prefill_inputs_kernel",
+        "_prepare_rope_positions_kernel",
+        "_scatter_num_accepted_kernel",
+        "void ",
+        "void at::native::_scatter_gather_elementwise_kernel<128, 8, at::native",
+        "void at::native::index_elementwise_kernel<128, 4, at::native::gpu_inde",
+        "void at::native::reduce_kernel<512, 1, at::native::ReduceOp<float, at:",
+        "void at::native::vectorized_elementwise_kernel<2, at::native::FillFunc",
+        "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunc",
+        "void at::native::vectorized_elementwise_kernel<8, at::native::FillFunc"
+      ],
+      "observed_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 6.0,
+        "eager: execute_context_1(217)_generation_0(0)": 7.0,
+        "eager: execute_context_1(784)_generation_0(0)": 9.0,
+        "eager: outside_step": 90.0
+      },
+      "total_us_per_step": {
+        "eager: execute_context_0(0)_generation_1(1)": 8.8,
+        "eager: execute_context_1(217)_generation_0(0)": 16.5,
+        "eager: execute_context_1(784)_generation_0(0)": 18.5,
+        "eager: outside_step": 230.6
+      }
+    }
+  ],
+  "unexplained": [],
+  "coverage": {
+    "eager: execute_context_0(0)_generation_1(1)": {
+      "explained_us": 11590.8,
+      "unexplained_us": 0.0,
+      "explained_share": 1.0
+    },
+    "eager: execute_context_1(217)_generation_0(0)": {
+      "explained_us": 26195.6,
+      "unexplained_us": 0.0,
+      "explained_share": 1.0
+    },
+    "eager: execute_context_1(784)_generation_0(0)": {
+      "explained_us": 63067.6,
+      "unexplained_us": 0.0,
+      "explained_share": 1.0
+    },
+    "eager: outside_step": {
+      "explained_us": 5566.7,
+      "unexplained_us": 0.0,
+      "explained_share": 1.0
+    }
+  }
+}

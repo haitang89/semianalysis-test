@@ -285,6 +285,28 @@
     },
     {
       "block": "gdn",
+      "name": "state_gather",
+      "kind": "gather",
+      "dtype": "fp32",
+      "shape": "[B, 48, 128, 128] from the state pool",
+      "per_step": 48,
+      "weight_bytes": 0.0,
+      "flops_per_token": 0.0,
+      "note": "eager prefill path reads the initial state of every sequence before the chunked kernel"
+    },
+    {
+      "block": "gdn",
+      "name": "state_checkpoint",
+      "kind": "copy",
+      "dtype": "fp32",
+      "shape": "recurrent and conv states copied at block boundaries",
+      "per_step": 1,
+      "weight_bytes": 0.0,
+      "flops_per_token": 0.0,
+      "note": "prefix caching in align mode; one fused kernel per step for all layers"
+    },
+    {
+      "block": "gdn",
       "name": "out_proj",
       "kind": "gemm",
       "dtype": "fp8",
@@ -322,7 +344,7 @@
       "kind": "quantize",
       "dtype": "fp8",
       "shape": "[M, K] bf16 -> fp8 with per token group scales, before each FP8 GEMM",
-      "per_step": 304,
+      "per_step": 256,
       "weight_bytes": 0.0,
       "flops_per_token": 0.0,
       "note": ""
