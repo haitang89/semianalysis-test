@@ -50,6 +50,7 @@ The supporting ops (FP8 and BF16 GEMMs at the model's fixed shapes, norms, activ
 
 - this repo: harness, configs, raw results, processed tables, figures
 - [`report/REPORT.md`](report/REPORT.md): methodology, results and limitations
+- [`CHALLENGES.md`](CHALLENGES.md): the problems I hit along the way and how I fixed them
 
 ## Layout
 
