@@ -1,0 +1,7 @@
+benchmark: ops_gemm
+regime: ops
+backends: [engine, bf16]
+timing: {warmup: 10, repeats: 50, graph_mode: always, point_timeout_s: 120}
+grid:
+  op: [gate_up_proj, down_proj, qkv_proj, o_proj, in_proj_qkvz, in_proj_ba, out_proj, lm_head]
+  tokens: [1, 8, 32, 64, 256, 784, 2048, 8192]

@@ -30,8 +30,9 @@ def sample_data():
               for d, us in (("uniform", 100.0), ("jitter", 102.0), ("lognormal", 104.0), ("bimodal", 110.0), ("mixed", 101.0))]
     pages = [row("attention_pages", "flash_attn_3", kind="warm", page_size=p, new_tokens=512, cached=1568, batch=8) for p in (16, 784)]
     pages += [row("attention_pages", "flash_attn_3", kind="decode", page_size=p, kv=16384, batch=64) for p in (16, 784)]
+    ops = [row("ops_gemm", b, op="gate_up_proj", tokens=t, kernel_tflops=t * 0.1) for b in ("engine", "bf16") for t in (1, 64, 8192)]
     return {"attention_cold": attention_cold, "attention_warm": attention_warm, "gdn_warm": gdn_warm, "gdn_decode": gdn_decode,
-            "gdn_cold": gdn_cold, "gdn_ragged": ragged, "attention_pages": pages}
+            "gdn_cold": gdn_cold, "gdn_ragged": ragged, "attention_pages": pages, "ops_gemm": ops}
 
 
 def test_every_figure_renders_from_complete_data(tmp_path):

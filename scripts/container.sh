@@ -5,6 +5,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 IMAGE="${VLLM_IMAGE:-vllm/vllm-openai:v0.29.0}"
 NAME="${BENCH_CONTAINER:-bench}"
 HF_CACHE="${HF_HOME:-$HOME/.cache/huggingface}"
+TRACES="${TRACES_DIR:-$HOME/traces}"
 
 build_args() {
   local digest sha dirty=0
@@ -13,7 +14,7 @@ build_args() {
   if [ -n "$(git -C "$ROOT" status --porcelain --untracked-files=no 2>/dev/null)" ]; then dirty=1; fi
   args=(
     --name "$NAME" --gpus all --network host --ipc host
-    -v "$ROOT:/work" -v "$HF_CACHE:/root/.cache/huggingface"
+    -v "$ROOT:/work" -v "$HF_CACHE:/root/.cache/huggingface" -v "$TRACES:/traces"
     -w /work -e PYTHONPATH=/work -e PYTHONUNBUFFERED=1
     -e "BENCH_IMAGE=$IMAGE" -e "BENCH_IMAGE_DIGEST=$digest"
     -e "BENCH_GIT_SHA=$sha" -e "BENCH_GIT_DIRTY=$dirty"

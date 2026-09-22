@@ -62,7 +62,7 @@ def test_kernels_join_ops_frames_and_steps():
     all_records = tp.kernel_records(trace()["traceEvents"], "eager")
     records = {(r.kernel, r.op): r for r in all_records if "14336" not in r.input_dims}
     gdn_gemm = records[("deep_gemm::sm90_fp8_gemm", "vllm::dynamic_flashinfer_deepgemm_blockscale_gemm")]
-    assert gdn_gemm.block == "gdn" and gdn_gemm.input_dims == "[[784,5120],[16384,5120]]"
+    assert gdn_gemm.block == "gemm" and gdn_gemm.input_dims == "[[784,5120],[16384,5120]]"
     assert gdn_gemm.frame == "model_executor/layers/linear.py:593 forward"
     assert gdn_gemm.step.startswith("execute_context_1(784)") and gdn_gemm.step_tokens == 784
     conv = records[("_causal_conv1d_fwd_kernel", "vllm::qwen_gdn_attention_core_fused_norm")]
@@ -75,10 +75,18 @@ def test_kernels_join_ops_frames_and_steps():
     assert replayed.graph is True and replayed.step.startswith("execute_context_0(0)_generation_2")
 
 
-def test_attention_projection_is_labelled_by_the_decoder_layer_frame():
+def test_gemm_kernels_are_labelled_gemm_whatever_frame_launched_them():
     records = tp.kernel_records(trace()["traceEvents"], "eager")
-    attention_gemm = [r for r in records if r.kernel == "deep_gemm::sm90_fp8_gemm" and "14336" in r.input_dims]
-    assert len(attention_gemm) == 1 and attention_gemm[0].block == "attention"
+    gemms = [r for r in records if r.kernel == "deep_gemm::sm90_fp8_gemm"]
+    assert len(gemms) == 2 and {r.block for r in gemms} == {"gemm"}
+    assert {r.input_dims for r in gemms} == {"[[784,5120],[16384,5120]]", "[[784,5120],[14336,5120]]"}
+    assert tp.label_frames([], "void deep_gemm::fp8_gemm_kernel_swapAB<34816u, 5120u, 128u>", "") == ("gemm", "")
+    assert tp.label_frames([], "triton_red_fused__to_copy_add_fused_add_rms_norm_2", "triton_red_fused__to_copy_add_fused_add_rms_norm_2") == ("norm", "")
+    assert tp.label_frames([], "triton_poi_fused_mul_silu_slice_1", "")[0] == "mlp"
+    assert tp.label_frames([], "kernel_cutlass_kernel_flashinfergdn_kernelsdelta_rule_sm90_FullyFused", "vllm::qwen_gdn_attention_core_fused_norm_packed")[0] == "gdn"
+    assert tp.label_frames([], "layer_norm_fwd_kernel", "vllm::qwen_gdn_attention_core_fused_norm_packed")[0] == "gdn"
+    assert tp.label_frames([], "void at::native::vectorized_gather_kernel<16, long>", "aten::index")[0] == "other"
+    assert tp.label_frames(["vllm/model_executor/layers/mamba/gdn/qwen_gdn_linear_attn.py(828): forward"], "void at::native::vectorized_gather_kernel", "aten::index")[0] == "gdn"
 
 
 def test_frames_are_tracked_per_thread():

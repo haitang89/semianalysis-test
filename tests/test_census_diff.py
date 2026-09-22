@@ -20,6 +20,19 @@ def test_gemm_dims_follow_the_operator_layout():
     assert census_diff.gemm_dims("aten::add", "[[1,5120]]") is None
 
 
+def test_graph_replayed_gemms_are_read_from_the_kernel_template_and_split_when_ambiguous():
+    assert census_diff.gemm_dims("", "", "void deep_gemm::fp8_gemm_kernel_swapAB<34816u, 5120u, 128u, 16u>") == (5120, 34816)
+    assert census_diff.gemm_dims("", "", "void deep_gemm::sm90_fp8_gemm_1d2d_impl<(cute::UMMA::Major)0, 0u, 5120u, 17408u, 1u>") == (17408, 5120)
+    assert census_diff.explain(observed("void deep_gemm::fp8_gemm_kernel_swapAB<34816u, 5120u, 128u>", block="gemm"), GEMMS) == ("gate_up_proj",)
+    shared = census_diff.explain(observed("void deep_gemm::fp8_gemm_kernel_swapAB<5120u, 6144u, 128u>", block="gemm"), GEMMS)
+    assert sorted(set(shared)) == ["o_proj", "out_proj"] and shared.count("out_proj") == 3 * shared.count("o_proj")
+    hinted = dict(observed("void deep_gemm::fp8_gemm_kernel_swapAB<5120u, 6144u, 128u>", block="gemm"), frame="model_executor/layers/mamba/gdn/qwen_gdn_linear_attn.py:828 forward")
+    assert census_diff.explain(hinted, GEMMS) == ("out_proj",)
+    assert census_diff.explain(observed("nvjet_sm90_tst_32x64_64x16_1x2_h_bz_splitK_TNN", block="gemm"), GEMMS) == ("in_proj_ba",)
+    assert census_diff.explain(observed("triton_red_fused__to_copy_add_fused_add_rms_norm_2", "triton_red_fused__to_copy_add_fused_add_rms_norm_2", block="norm"), GEMMS) == census_diff.NORMS
+    assert census_diff.explain(observed("triton_poi_fused_mul_silu_slice_1", block="mlp"), GEMMS) == ("silu_and_mul",)
+
+
 def test_gemms_match_by_shape_and_the_block_breaks_the_tie():
     row = observed("deep_gemm::sm90_fp8_gemm", "vllm::dynamic_flashinfer_deepgemm_blockscale_gemm", "[[784,6144],[5120,6144]]", block="attention")
     assert census_diff.explain(row, GEMMS) == ("o_proj",)

@@ -14,6 +14,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import math
 import re
 import sys
 from collections import defaultdict
@@ -28,44 +29,75 @@ GEMM_OPS = {
     "aten::linear": "nk",
 }
 ENGINE = "engine work outside the model"
+NORMS = ("input_layernorm", "post_attention_layernorm", "residual_add", "final_norm")
 RULES: tuple[tuple[str, Optional[str], tuple[str, ...]], ...] = (
     (r"causal_conv1d", None, ("causal_conv1d",)),
     (r"fused_post_conv", None, ("post_conv_prep",)),
-    (r"flashinfergdn|delta_rule|chunk_|fused_recurrent|solve_tril|fwd_h|fwd_o|cumsum|wy_", "gdn", ("gated_delta_rule",)),
-    (r"layer_norm_fwd|rms_norm_gated", "gdn", ("gated_rmsnorm",)),
+    (r"flashinfergdn|delta_rule|chunk_|fused_recurrent|solve_tril|fwd_h|fwd_o|cumsum|wy_", None, ("gated_delta_rule",)),
+    (r"layer_norm_fwd|rms_norm_gated", None, ("gated_rmsnorm",)),
     (r"index_elementwise|index_put|gather|scatter", "gdn", ("state_gather",)),
-    (r"elementwise|copy_|reduce_kernel|fill", "gdn", ("post_conv_prep",)),
+    (r"elementwise|copy_|reduce_kernel|fill|CatArray|aten::cat|masked_fill", "gdn", ("post_conv_prep",)),
     (r"mamba_align|mamba_fused", None, ("state_checkpoint",)),
     (r"flash::|fa3|flash_fwd|enable_sm90_or_later|prepare_varlen_num_blocks", None, ("attention",)),
     (r"prepare_rope_positions|prepare_", None, (ENGINE,)),
     (r"fused_qk_rmsnorm_rope_gate", None, ("q_norm", "k_norm", "rotary")),
     (r"reshape_and_cache|concat_and_cache|apply_write", None, ("kv_cache_write",)),
+    (r"triton_.*fused_add_rms_norm|triton_.*rms_norm", None, NORMS),
+    (r"triton_.*silu", None, ("silu_and_mul",)),
+    (r"triton_.*sigmoid", None, ("output_gate",)),
+    (r"triton_poi_fused_zeros|triton_.*fused_zeros", None, (ENGINE,)),
     (r"sigmoid|elementwise|copy_", "attention", ("output_gate",)),
+    (r"aten::sigmoid|aten::mul", "other", ("output_gate",)),
     (r"act_and_mul|silu", None, ("silu_and_mul",)),
     (r"per_token_group_quant|quant", None, ("fp8_activation_quant",)),
     (r"copy_", "mlp", ("fp8_activation_quant",)),
-    (r".*", "norm", ("input_layernorm", "post_attention_layernorm", "residual_add", "final_norm")),
+    (r"copy_|elementwise", "quant", ("fp8_activation_quant",)),
+    (r"copy_|elementwise", "gemm", ("fp8_activation_quant",)),
+    (r"nvjet|cublas", "gemm", ("in_proj_ba",)),
+    (r".*", "norm", NORMS),
     (r".*", "embedding", ("embed_tokens",)),
     (r".*", "rotary", ("rotary",)),
     (r".*", "kv_cache", ("kv_cache_write",)),
     (r".*", "logits", ("lm_head",)),
     (r".*", "sampler", (ENGINE,)),
-    (r"prepare_|_post_update|num_accepted|fill|arange|index|copy_|pos_seq|block_table|slot_mapping", "other", (ENGINE,)),
+    (r"prepare_|_post_update|num_accepted|fill|arange|index|copy_|pos_seq|block_table|slot_mapping|memcpy|memset", "other", (ENGINE,)),
 )
 RULES_COMPILED = [(re.compile(pattern, re.IGNORECASE), block, targets) for pattern, block, targets in RULES]
+KERNEL_DIMS = (
+    re.compile(r"fp8_gemm_kernel_swapAB<(\d+)u, (\d+)u"),
+    re.compile(r"sm90_fp8_gemm_1d2d_impl<[^,]+, \d+u, (\d+)u, (\d+)u"),
+)
+BLOCK_HINTS = (("mamba/gdn|gdn", "gdn"), ("attention|flash_attn|qwen3_next", "attention"), ("mlp|qwen2_moe", "mlp"))
 
 
-def gemm_dims(op: str, input_dims: str) -> Optional[tuple[int, int]]:
+def gemm_dims(op: str, input_dims: str, kernel: str = "") -> Optional[tuple[int, int]]:
+    """(K, N) of a GEMM from the operator's recorded input shapes, else from the kernel's template arguments."""
     order = GEMM_OPS.get(op)
-    if not order or not input_dims:
-        return None
-    dims = json.loads(input_dims)
-    if len(dims) < 2 or len(dims[0]) != 2 or len(dims[1]) != 2:
-        return None
-    a, b = dims[0], dims[1]
-    if order == "nk":
-        return b[1], b[0]
-    return b[0], b[1]
+    if order and input_dims:
+        dims = json.loads(input_dims)
+        if len(dims) >= 2 and len(dims[0]) == 2 and len(dims[1]) == 2:
+            b = dims[1]
+            return (b[1], b[0]) if order == "nk" else (b[0], b[1])
+    for pattern in KERNEL_DIMS:
+        match = pattern.search(kernel)
+        if match:
+            return int(match.group(2)), int(match.group(1))
+    return None
+
+
+def block_hint(row: dict) -> Optional[str]:
+    text = f"{row.get('block', '')} {row.get('frame', '')}"
+    for pattern, block in BLOCK_HINTS:
+        if re.search(pattern, text):
+            return block
+    return None
+
+
+def weighted(candidates: list[dict]) -> tuple[str, ...]:
+    """Ambiguous GEMM shapes are split between the inventory ops in proportion to their per step counts."""
+    counts = [max(1, int(c["per_step"])) for c in candidates]
+    unit = math.gcd(*counts)
+    return tuple(name for c, n in zip(candidates, counts) for name in [c["name"]] * (n // unit))
 
 
 def gemm_index(inventory: list[dict]) -> dict[tuple[int, int], list[dict]]:
@@ -84,12 +116,15 @@ QUANT_KERNEL = re.compile(r"per_token_group_quant|scale_1x128|quant", re.IGNOREC
 def explain(row: dict, gemms: dict[tuple[int, int], list[dict]]) -> tuple[str, ...]:
     if QUANT_KERNEL.search(row["kernel"]):
         return ("fp8_activation_quant",)
-    dims = gemm_dims(row["op"], row["input_dims"])
+    dims = gemm_dims(row["op"], row["input_dims"], row["kernel"])
     if dims:
         candidates = gemms.get(dims, [])
         if len(candidates) > 1:
-            same_block = [c for c in candidates if c["block"] == row["block"]]
+            hint = block_hint(row)
+            same_block = [c for c in candidates if c["block"] == hint]
             candidates = same_block or candidates
+        if len(candidates) > 1:
+            return weighted(candidates)
         return (candidates[0]["name"],) if candidates else ()
     for pattern, block, targets in RULES_COMPILED:
         if block is not None and block != row["block"]:

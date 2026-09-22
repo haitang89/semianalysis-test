@@ -238,6 +238,23 @@ def roofline_attainment(data: Data, ceilings) -> Optional[plt.Figure]:
     return fig
 
 
+def ops_gemm_throughput(data: Data, ceilings, op: str = "gate_up_proj") -> Optional[plt.Figure]:
+    rows = select(data.get("ops_gemm", []), op=op)
+    if not rows:
+        return None
+    fig, ax = new_figure(f"{op} GEMM: achieved TFLOPS against tokens in the step", "tokens in the step", "TFLOPS")
+    labels = {"engine": "FP8 block scaled, the engine's op", "bf16": "BF16 torch.mm"}
+    for backend in sorted({r["backend"] for r in rows}):
+        xs, ys = series(rows, "tokens", "kernel_tflops", backend=backend)
+        ax.plot(xs, ys, marker="o", label=labels.get(backend, backend))
+    ax.axhline(ceilings.fp8_tflops, color=PALETTE[0], linestyle=":", linewidth=1, label="measured FP8 GEMM peak")
+    ax.axhline(ceilings.bf16_tflops, color=PALETTE[1], linestyle=":", linewidth=1, label="measured BF16 GEMM peak")
+    ax.set_xscale("log", base=2)
+    ax.set_yscale("log")
+    ax.legend()
+    return fig
+
+
 FIGURES: list[tuple[str, Callable]] = [
     ("attention_decode_bandwidth", attention_decode_bandwidth),
     ("attention_prefill_tflops", attention_prefill_tflops),
@@ -248,6 +265,7 @@ FIGURES: list[tuple[str, Callable]] = [
     ("ragged_efficiency", ragged_efficiency),
     ("page_size", page_size),
     ("roofline_attainment", roofline_attainment),
+    ("ops_gemm_throughput", ops_gemm_throughput),
 ]
 
 

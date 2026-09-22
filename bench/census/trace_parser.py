@@ -24,24 +24,30 @@ from pathlib import Path
 from typing import Iterable, Optional
 
 STEP_NAME = re.compile(r"execute_context_(\d+)\((\d+)\)_generation_(\d+)\((\d+)\)")
-BLOCK_PATTERNS = (
+KERNEL_PATTERNS = (
+    ("gdn", re.compile(r"gdn|delta_rule|causal_conv1d|mamba|post_conv|recurrent|layer_norm_fwd_kernel", re.IGNORECASE)),
+    ("quant", re.compile(r"per_token_group|group_quant|scale_1x128|quant", re.IGNORECASE)),
+    ("gemm", re.compile(r"deep_gemm|deepgemm|nvjet|cublas|gemm|scaled_mm|aten::mm|aten::matmul", re.IGNORECASE)),
+    ("attention", re.compile(r"flash_attn|flash::|FlashAttn|fa3|attn|attention|rope|qk_rmsnorm|reshape_and_cache|prepare_varlen", re.IGNORECASE)),
+    ("norm", re.compile(r"rms_norm|layernorm|layer_norm", re.IGNORECASE)),
+    ("mlp", re.compile(r"silu|act_and_mul", re.IGNORECASE)),
+    ("sampler", re.compile(r"sampl|topk|top_p|softmax|multinomial|gumbel", re.IGNORECASE)),
+    ("kv_cache", re.compile(r"kv_blocks|block_table|slot_mapping|apply_write", re.IGNORECASE)),
+)
+FRAME_PATTERNS = (
     ("gdn", re.compile(r"mamba/gdn/|fla/|mamba_mixer|causal_conv1d")),
     ("attention", re.compile(r"attention/backends/|layers/attention/|flash_attn")),
     ("mlp", re.compile(r"qwen2_moe\.py|layers/activation\.py|/mlp\.py")),
-    ("norm", re.compile(r"layers/layernorm\.py")),
+    ("norm", re.compile(r"layers/layernorm\.py|ops/layernorm\.py")),
+    ("quant", re.compile(r"quantization/utils|deep_gemm\.py")),
+    ("gemm", re.compile(r"layers/linear\.py|scaled_mm/|kernels/linear/")),
     ("embedding", re.compile(r"vocab_parallel_embedding\.py")),
-    ("logits", re.compile(r"logits_processor\.py")),
+    ("logits", re.compile(r"logits_processor\.py|layers/utils\.py")),
     ("sampler", re.compile(r"/sample/|sampler\.py")),
     ("rotary", re.compile(r"rotary_embedding")),
     ("kv_cache", re.compile(r"kv_cache|block_table|slot_mapping")),
 )
-KERNEL_PATTERNS = (
-    ("attention", re.compile(r"flash|fa3|attn|rope|qk_rmsnorm", re.IGNORECASE)),
-    ("gdn", re.compile(r"gdn|delta_rule|causal_conv1d|mamba|post_conv|recurrent", re.IGNORECASE)),
-    ("sampler", re.compile(r"sampl|topk|top_p|softmax|multinomial|gumbel", re.IGNORECASE)),
-    ("kv_cache", re.compile(r"kv_blocks|block_table|slot_mapping|apply_write", re.IGNORECASE)),
-)
-DECODER_LAYER = re.compile(r"models/qwen3_next\.py\(\d+\): forward")
+BLOCK_PATTERNS = FRAME_PATTERNS
 VLLM_FRAME = re.compile(r"vllm/(.+?\.py)\((\d+)\): (\w+)")
 
 
@@ -112,22 +118,24 @@ def step_for(steps: list[Step], ts: float) -> Optional[Step]:
     return None
 
 
-def label_frames(frames: list[str], kernel: str = "") -> tuple[str, str]:
-    """Block from the outermost matching frame, else from the kernel name; innermost vLLM frame as the location."""
+def label_frames(frames: list[str], kernel: str = "", op: str = "") -> tuple[str, str]:
+    """Block from the kernel or operator name first, else from the outermost matching frame; innermost vLLM frame as the location.
+
+    Kernels replayed from a CUDA graph have no operator and no frames, so the kernel name
+    has to carry the label; in the compiled mode the frames are compile cache paths anyway.
+    """
     block = "other"
-    for frame in frames:
-        for name, pattern in BLOCK_PATTERNS:
-            if pattern.search(frame):
-                block = name
-                break
-        if block != "other":
+    for name, pattern in KERNEL_PATTERNS:
+        if pattern.search(kernel) or (op and pattern.search(op)):
+            block = name
             break
-    if block == "other" and any(DECODER_LAYER.search(frame) for frame in frames):
-        block = "attention"
     if block == "other":
-        for name, pattern in KERNEL_PATTERNS:
-            if pattern.search(kernel):
-                block = name
+        for frame in frames:
+            for name, pattern in FRAME_PATTERNS:
+                if pattern.search(frame):
+                    block = name
+                    break
+            if block != "other":
                 break
     location = ""
     for frame in reversed(frames):
@@ -176,7 +184,7 @@ def kernel_records(events: list[dict], mode: str, trace: str = "") -> list[Kerne
         op = ops.get(args.get("External id"))
         op_args = (op or {}).get("args") or {}
         step = step_for(steps, event["ts"])
-        block, location = label_frames(frames.get(args.get("External id"), []), event["name"])
+        block, location = label_frames(frames.get(args.get("External id"), []), event["name"], op["name"] if op else "")
         records.append(KernelRecord(
             mode=mode,
             trace=trace,
