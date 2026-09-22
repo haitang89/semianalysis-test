@@ -215,8 +215,8 @@ def main(argv: Optional[list[str]] = None) -> int:
 
     result = census(json.loads(Path(args.config).read_text(encoding="utf-8")))
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
-    Path(args.out).write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
-    Path(args.table).write_text(markdown_table(Op(**op) for op in result["ops"]) + "\n", encoding="utf-8")
+    Path(args.out).write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8", newline="\n")
+    Path(args.table).write_text(markdown_table(Op(**op) for op in result["ops"]) + "\n", encoding="utf-8", newline="\n")
     g = result["geometry"]
     print(
         f"{g['layers']} layers ({len(result['attention_layers'])} attention, {g['layers'] - len(result['attention_layers'])} GDN), "

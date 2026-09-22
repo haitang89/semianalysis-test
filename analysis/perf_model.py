@@ -284,7 +284,7 @@ def main(argv: Optional[list[str]] = None) -> int:
         "kernel_attainment": rows,
     }, indent=2) + "\n", encoding="utf-8")
     table = step_table(steps) + ("\n\n" + attainment_summary(rows) if rows else "")
-    Path(args.table).write_text(table + "\n", encoding="utf-8")
+    Path(args.table).write_text(table + "\n", encoding="utf-8", newline="\n")
     print(table)
     return 0
 

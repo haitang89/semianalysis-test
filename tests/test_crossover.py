@@ -57,4 +57,4 @@ def test_cli_round_trips_through_csv(tmp_path):
     assert load_csv(attention)[0]["cached"] == 0
     data = json.loads(out.read_text())
     assert data[0]["layer_crossover_cached"] == 12000.0
-    assert "| 512 | 1 | 150 | 40 | 400 | 12,000 |" in table.read_text()
+    assert "| 512 | 1 | 150 | 40 | 400 | 12000 |" in table.read_text()

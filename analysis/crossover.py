@@ -93,7 +93,7 @@ def crossovers(attention_rows: list[dict], gdn_rows: list[dict], gdn_backend: st
 def fmt_tokens(value: Optional[float]) -> str:
     if value is None:
         return "beyond grid"
-    return f"{value:,.0f}"
+    return f"{value:.0f}"
 
 
 def markdown(rows: list[Crossover]) -> str:
@@ -122,8 +122,8 @@ def main(argv: Optional[list[str]] = None) -> int:
         print("no matching warm points", file=sys.stderr)
         return 1
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
-    Path(args.out).write_text(json.dumps([asdict(r) for r in rows], indent=2) + "\n", encoding="utf-8")
-    Path(args.table).write_text(markdown(rows) + "\n", encoding="utf-8")
+    Path(args.out).write_text(json.dumps([asdict(r) for r in rows], indent=2) + "\n", encoding="utf-8", newline="\n")
+    Path(args.table).write_text(markdown(rows) + "\n", encoding="utf-8", newline="\n")
     print(markdown(rows))
     return 0
 

@@ -167,8 +167,8 @@ def main(argv: Optional[list[str]] = None) -> int:
     inventory = json.loads(Path(args.inventory).read_text(encoding="utf-8"))["ops"]
     result = diff(observed, inventory)
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
-    Path(args.out).write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
-    Path(args.table).write_text(markdown(result) + "\n", encoding="utf-8")
+    Path(args.out).write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8", newline="\n")
+    Path(args.table).write_text(markdown(result) + "\n", encoding="utf-8", newline="\n")
     missing = [op["op"] for op in result["ops"] if op["in_inventory"] and op["expected_per_step"] and not op["observed"]]
     print(f"{len(result['unexplained'])} unexplained kernel rows; inventory ops not observed: {missing or 'none'}")
     for step, cov in result["coverage"].items():

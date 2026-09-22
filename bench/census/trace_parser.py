@@ -278,7 +278,7 @@ def main(argv: Optional[list[str]] = None) -> int:
         rows = [r for r in read_rows(out) if (r["mode"], r["trace"]) not in written] + rows
     write_rows(rows, out)
     Path(args.summary).parent.mkdir(parents=True, exist_ok=True)
-    Path(args.summary).write_text(block_summary(rows) + "\n", encoding="utf-8")
+    Path(args.summary).write_text(block_summary(rows) + "\n", encoding="utf-8", newline="\n")
     steps = {r["step"] for r in rows if r["mode"] == args.mode}
     print(f"{args.mode}: {sum(r['count'] for r in rows if r['mode'] == args.mode)} kernels in {len(steps)} steps, "
           f"{len({r['kernel'] for r in rows if r['mode'] == args.mode})} distinct")

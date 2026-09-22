@@ -127,8 +127,8 @@ def main(argv: Optional[list[str]] = None) -> int:
 
     rows = variants(geometry_from_config(json.loads(Path(args.config).read_text(encoding="utf-8"))))
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
-    Path(args.out).write_text(json.dumps([asdict(r) for r in rows], indent=2) + "\n", encoding="utf-8")
-    Path(args.table).write_text(markdown(rows) + "\n", encoding="utf-8")
+    Path(args.out).write_text(json.dumps([asdict(r) for r in rows], indent=2) + "\n", encoding="utf-8", newline="\n")
+    Path(args.table).write_text(markdown(rows) + "\n", encoding="utf-8", newline="\n")
     print(f"{len(rows)} variants, {sum(r.measured for r in rows)} measured")
     return 0
 
