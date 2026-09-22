@@ -89,7 +89,8 @@ def work(spec: OpSpec, tokens: int) -> OpWork:
     raise ValueError(f"unknown op kind {spec.kind}")
 
 
-def metrics(spec: OpSpec, work_: OpWork, median_us: float, tokens: int, ceilings: dict | None) -> dict:
+def metrics(spec: OpSpec, work_: OpWork, median_us: float, tokens: int, ceilings: dict | None, dtype: str | None = None) -> dict:
+    dtype = dtype or spec.dtype
     seconds = median_us * 1e-6
     result = {
         "flops": work_.flops,
@@ -102,7 +103,7 @@ def metrics(spec: OpSpec, work_: OpWork, median_us: float, tokens: int, ceilings
         "per_step_count": spec.per_step,
     }
     if ceilings:
-        peak = ceilings["fp8_tflops_measured"] if spec.dtype == "fp8" else ceilings["bf16_tflops_measured"]
+        peak = ceilings["fp8_tflops_measured"] if dtype == "fp8" else ceilings["bf16_tflops_measured"]
         result["bandwidth_util"] = result["achieved_gbps"] / ceilings["hbm_bw_gbps_measured"]
         result["compute_util"] = result["achieved_tflops"] / peak
     return result

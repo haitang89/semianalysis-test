@@ -90,11 +90,13 @@ class KernelTable:
         self.attention_cold = load_csv(processed / "attention_cold.csv")
         self.gdn_cold = select(load_csv(processed / "gdn_cold.csv"), backend=gdn_backend)
         self.gdn_decode = select(load_csv(processed / "gdn_decode.csv"), backend="packed", history=None)
-        ops_path = processed / "ops_gemm.csv"
-        self.ops = select(load_csv(ops_path), backend="engine") if ops_path.exists() else []
-        elementwise = processed / "ops_elementwise.csv"
-        if elementwise.exists():
-            self.ops += select(load_csv(elementwise), backend="engine")
+        self.ops: list[dict] = []
+        for name in ("ops_gemm.csv", "ops_elementwise.csv"):
+            path = processed / name
+            if path.exists():
+                self.ops += select(load_csv(path), backend="engine")
+            else:
+                print(f"no {name} under {processed}: the kernel sum leaves those ops out", file=sys.stderr)
 
     def once(self, us: float) -> float:
         return max(us - self.floor, 0.5)

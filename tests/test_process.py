@@ -45,6 +45,14 @@ def test_process_splits_by_benchmark_and_excludes_failures(tmp_path, capsys):
     assert "excluded a failed" in capsys.readouterr().err
 
 
+def test_mock_outputs_are_left_out_of_the_tables(tmp_path):
+    raw, out = tmp_path / "raw", tmp_path / "processed"
+    raw.mkdir()
+    (raw / "a.jsonl").write_text(json.dumps(row("a", batch=1)) + "\n")
+    (raw / "a_mock.jsonl").write_text(json.dumps(row("a", batch=2)) + "\n")
+    assert process(raw, out) == {"a": 1}
+
+
 def test_process_twice_is_byte_identical(tmp_path):
     raw, out = tmp_path / "raw", tmp_path / "processed"
     raw.mkdir()

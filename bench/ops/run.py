@@ -138,8 +138,9 @@ class GpuDriver:
         else:
             kernel = self.elementwise_kernel(spec, tokens)
         timing = time_kernel(kernel, self.timing, self.clock)
-        metrics = catalog.metrics(spec, catalog.work(spec, tokens), timing.median_us, tokens, self.ceilings)
-        metrics["dtype"] = spec.dtype if backend == "engine" else "bf16"
+        dtype = spec.dtype if backend == "engine" else "bf16"
+        metrics = catalog.metrics(spec, catalog.work(spec, tokens), timing.median_us, tokens, self.ceilings, dtype)
+        metrics["dtype"] = dtype
         self.torch.cuda.empty_cache()
         return timing, metrics
 

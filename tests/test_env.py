@@ -83,9 +83,11 @@ def test_blackwell_on_cuda_12_warns_about_the_triton_default():
     assert any("CUDA 13" in warning for warning in env.warnings)
 
 
-def test_hash_ignores_the_timestamp_only():
+def test_hash_ignores_the_timestamp_and_the_commit_only():
     first, second = envmod.mock_environment(), envmod.mock_environment()
     second.collected_at = "2026-09-21T00:00:00+00:00"
+    second.git_sha = "0" * 40
+    second.git_dirty = not first.git_dirty
     assert environment_hash(first) == environment_hash(second)
     second.driver_version = "1.0"
     assert environment_hash(first) != environment_hash(second)

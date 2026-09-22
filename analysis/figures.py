@@ -244,9 +244,10 @@ def ops_gemm_throughput(data: Data, ceilings, op: str = "gate_up_proj") -> Optio
         return None
     fig, ax = new_figure(f"{op} GEMM: achieved TFLOPS against tokens in the step", "tokens in the step", "TFLOPS")
     labels = {"engine": "FP8 block scaled, the engine's op", "bf16": "BF16 torch.mm"}
-    for backend in sorted({r["backend"] for r in rows}):
+    colors = {"engine": PALETTE[0], "bf16": PALETTE[1]}
+    for backend in sorted({r["backend"] for r in rows}, reverse=True):
         xs, ys = series(rows, "tokens", "kernel_tflops", backend=backend)
-        ax.plot(xs, ys, marker="o", label=labels.get(backend, backend))
+        ax.plot(xs, ys, marker="o", color=colors.get(backend), label=labels.get(backend, backend))
     ax.axhline(ceilings.fp8_tflops, color=PALETTE[0], linestyle=":", linewidth=1, label="measured FP8 GEMM peak")
     ax.axhline(ceilings.bf16_tflops, color=PALETTE[1], linestyle=":", linewidth=1, label="measured BF16 GEMM peak")
     ax.set_xscale("log", base=2)

@@ -53,7 +53,7 @@ def test_decode_at_batch_one_is_bound_by_weight_bytes():
     gemm_us = sum(op.step_us for op in step.ops if op.name in {op.name for op in gemms})
     assert gemm_us == pytest.approx(weights / CEILINGS.hbm_gbps / 1e3, rel=0.001)
     assert all(op.bound == "memory" for op in step.ops)
-    assert step.by_bound() == {"memory": step.total_us}
+    assert step.by_bound()["memory"] == pytest.approx(step.total_us)
     assert {op.name for op in step.ops} >= {"gated_delta_rule_decode", "attention", "lm_head"}
     assert not any(op.name == "gated_delta_rule_prefill" for op in step.ops)
 

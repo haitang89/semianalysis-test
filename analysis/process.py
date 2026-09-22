@@ -2,7 +2,8 @@
 
     python3 -m analysis.process [--raw results/raw] [--out results/processed]
 
-Failed or unsupported points are listed on stderr and left out of the tables.
+Failed or unsupported points are listed on stderr and left out of the tables, and mock
+sweep outputs (files ending in _mock.jsonl) are skipped.
 Kernel time is the graph replay median when the point has one, else the eager median.
 """
 from __future__ import annotations
@@ -40,6 +41,8 @@ def process(raw_dir: Path, out_dir: Path, err=None) -> dict:
     by_benchmark: dict[str, list[dict]] = defaultdict(list)
     excluded = []
     for path in sorted(raw_dir.glob("*.jsonl")):
+        if path.stem.endswith("_mock"):
+            continue
         for row in read_rows(path):
             if row.get("status") != "ok":
                 excluded.append((row["benchmark"], row["status"], row.get("params"), (row.get("error") or "")[:80]))

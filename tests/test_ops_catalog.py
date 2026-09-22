@@ -52,6 +52,8 @@ def test_metrics_use_the_ceiling_of_the_dtype():
     assert fp8["per_step_count"] == 64 and fp8["per_step_us"] == 64000.0
     bf16 = catalog.metrics(SPECS["in_proj_ba"], catalog.work(SPECS["in_proj_ba"], 8192), 10.0, 8192, ceilings)
     assert bf16["compute_util"] == pytest.approx(bf16["achieved_tflops"] / 700.0)
+    bf16_path = catalog.metrics(SPECS["gate_up_proj"], catalog.work(SPECS["gate_up_proj"], 8192), 1000.0, 8192, ceilings, dtype="bf16")
+    assert bf16_path["compute_util"] == pytest.approx(fp8["achieved_tflops"] / 700.0)
 
 
 def test_mock_driver_returns_timing_and_metrics_for_every_op():

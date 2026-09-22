@@ -215,7 +215,8 @@ def mock_environment() -> Environment:
 
 
 def environment_hash(env: Environment) -> str:
-    stable = {key: value for key, value in env.to_dict().items() if key != "collected_at"}
+    """Identifies the machine and its software; the commit and the time are recorded next to it, not in it."""
+    stable = {key: value for key, value in env.to_dict().items() if key not in ("collected_at", "git_sha", "git_dirty")}
     return hashlib.sha256(json.dumps(stable, sort_keys=True).encode()).hexdigest()[:16]
 
 
