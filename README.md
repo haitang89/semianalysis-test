@@ -42,7 +42,7 @@ Everything is normalized to ceilings measured on the same GPU (achieved HBM band
 
 For GDN, "warm" means a restored fixed size recurrent state. The states are produced by really prefilling 0, 1k and 64k tokens, so history independence is measured rather than assumed.
 
-**Timing**: CUDA events, warmup, 50 repeats, median with p10/p90. Kernels under 100 microseconds are also replayed from a CUDA graph and both numbers are reported, since at that scale eager timing mostly measures launch overhead. Every backend passes a numerics check against a plain PyTorch reference before it is timed.
+**Timing**: CUDA events, warmup, 50 repeats, median with p10/p90. Every point is also replayed from a CUDA graph; the replay median is the kernel time and eager minus replay is the launch overhead, which matters for the short kernels. Every backend passes a numerics check against a plain PyTorch reference (GPU tests) before it is timed.
 
 **Supporting ops** (FP8 and BF16 GEMMs at the model's fixed shapes, norms, activation, rotary) and a **thin end to end anchor** (short serving runs, cold and about 90% prefix hits) feed a sum of parts model: 48 x GDN + 16 x attention + everything else, compared to measured step time.
 
@@ -54,16 +54,15 @@ For GDN, "warm" means a restored fixed size recurrent state. The states are prod
 ## Layout
 
 ```
-bench/core        timer, roofline model, nvidia-smi queries, environment record, ceilings, mock hardware
-bench/census      analytic inventory, profiler driver, trace parser, step distribution, shape set
-bench/attention   attention kernel drivers, reference, accounting, runner
+bench/core        timer, roofline helpers, nvidia-smi queries, environment record, ceilings, sweep runner, regimes, mock hardware
+bench/census      analytic inventory and shape variants, server log parser, profiler trace parser, inventory diff
+bench/attention   FlashAttention 3 driver, reference, accounting, runner
 bench/gdn         GDN kernel drivers, reference, accounting, runner
-bench/ops         GEMM and elementwise ops
-bench/anchor      end to end anchor runs
-analysis          processing, figures, sum of parts, summary, report check
-configs           model, shapes and sweep definitions
-scripts           host bootstrap, container helper, overnight sweep chain
-results           env, census, raw, processed, anchor
+analysis          process (raw rows to CSV), crossover, perf_model (roofline model), figures
+configs           model config and sweep definitions
+scripts           host bootstrap, container helper
+results           env, census, raw, processed
+report            REPORT.md and figures
 ```
 
 ## Running it
@@ -75,8 +74,13 @@ uv venv .venv --python 3.11
 uv pip install --python .venv/bin/python -e ".[dev]"
 .venv/bin/python -m pytest
 .venv/bin/python -m bench.attention.run -c configs/attention_warm.yaml --mock
-.venv/bin/python -m analysis.process && .venv/bin/python -m analysis.figures
+.venv/bin/python -m analysis.process
+.venv/bin/python -m analysis.crossover
+.venv/bin/python -m analysis.perf_model
+.venv/bin/python -m analysis.figures
 ```
+
+The committed raw rows regenerate every table and figure: `analysis.process` writes the CSVs, `analysis.crossover` the attention versus GDN crossover, `analysis.perf_model` the roofline model and kernel attainment, `analysis.figures` the PNG and SVG figures in `report/figures`. The census tables come from `bench.census.analytic`, `bench.census.variants`, and for the observed side `bench.census.trace_parser --trace <profiler trace> --mode eager` followed by `bench.census.diff`.
 
 On the GPU host the benchmarks run inside the pinned vLLM image, so kernel versions match the engine:
 
@@ -84,13 +88,14 @@ On the GPU host the benchmarks run inside the pinned vLLM image, so kernel versi
 bash scripts/bootstrap_host.sh
 bash scripts/container.sh start
 bash scripts/container.sh exec python3 -m bench.core.env
-bash scripts/container.sh exec python3 -m bench.core.probes
 bash scripts/container.sh exec python3 -m bench.core.ceilings
 bash scripts/container.sh exec python3 -m bench.attention.run -c configs/attention_warm.yaml
 bash scripts/container.sh exec python3 -m bench.gdn.run -c configs/gdn_warm.yaml
 ```
 
-Sweeps are resumable: finished points are skipped, `--only <glob>` reruns a subset, `--dry-run` lists the points.
+Sweeps are resumable: finished points are skipped, `--only <glob>` reruns a subset, `--dry-run` lists the points. Every result row carries the git commit, the image digest and an environment hash; the committed results were produced from committed code.
+
+The profiler trace for the observed census comes from the server itself, started with `--enforce-eager` and `--profiler-config '{"profiler": "torch", "torch_profiler_dir": "/traces", "torch_profiler_record_shapes": true}'`, then `/start_profile` and `/stop_profile` around the requests. The trace file is not committed (14 MB); the parsed tables are.
 
 ## Timeline
 
@@ -101,7 +106,7 @@ If time runs short the cut order is: end to end anchor, attention backend compar
 
 ## Status
 
-Work in progress, day 1.
+Day 1 done: ceilings, census (analytic, shape variants, observed eager trace), attention and GDN sweeps in all regimes, roofline model, figures. Day 2: compiled mode census, tokens per step distribution, supporting ops, end to end anchor, final report.
 
 ## License
 

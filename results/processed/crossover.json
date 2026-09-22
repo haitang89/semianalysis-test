@@ -1,0 +1,110 @@
+[
+  {
+    "new_tokens": 64,
+    "batch": 1,
+    "gdn_backend": "flashinfer",
+    "gdn_layer_us": 61.3120011985302,
+    "attention_layer_us_at_zero": 15.647999942302704,
+    "attention_layer_us_at_max": 351.9040048122406,
+    "max_cached": 125440,
+    "layer_crossover_cached": 13489.703244834987,
+    "step_crossover_cached": 60313.86373531621,
+    "step_share_attention_at_max": 0.6567333519157537
+  },
+  {
+    "new_tokens": 64,
+    "batch": 8,
+    "gdn_backend": "flashinfer",
+    "gdn_layer_us": 92.49599650502205,
+    "attention_layer_us_at_zero": 16.063999384641647,
+    "attention_layer_us_at_max": 3171.7119216918945,
+    "max_cached": 125440,
+    "layer_crossover_cached": 2108.910079670698,
+    "step_crossover_cached": 10135.03128654234,
+    "step_share_attention_at_max": 0.9195500415579083
+  },
+  {
+    "new_tokens": 64,
+    "batch": 32,
+    "gdn_backend": "flashinfer",
+    "gdn_layer_us": 309.2159926891327,
+    "attention_layer_us_at_zero": 35.071998834609985,
+    "attention_layer_us_at_max": 10805.808067321777,
+    "max_cached": 125440,
+    "layer_crossover_cached": 3384.47167737034,
+    "step_crossover_cached": 10625.578787230468,
+    "step_share_attention_at_max": 0.9209399196213864
+  },
+  {
+    "new_tokens": 512,
+    "batch": 1,
+    "gdn_backend": "flashinfer",
+    "gdn_layer_us": 120.87999656796455,
+    "attention_layer_us_at_zero": 61.8400014936924,
+    "attention_layer_us_at_max": 2978.16002368927,
+    "max_cached": 125440,
+    "layer_crossover_cached": 3209.331160247335,
+    "step_crossover_cached": 13543.714621430967,
+    "step_share_attention_at_max": 0.8914511529423848
+  },
+  {
+    "new_tokens": 512,
+    "batch": 8,
+    "gdn_backend": "flashinfer",
+    "gdn_layer_us": 265.52000641822815,
+    "attention_layer_us_at_zero": 109.8560020327568,
+    "attention_layer_us_at_max": 21115.568161010742,
+    "max_cached": 125440,
+    "layer_crossover_cached": 1182.105551501542,
+    "step_crossover_cached": 4489.514928117391,
+    "step_share_attention_at_max": 0.9636475283139277
+  },
+  {
+    "new_tokens": 512,
+    "batch": 32,
+    "gdn_backend": "flashinfer",
+    "gdn_layer_us": 994.5600032806396,
+    "attention_layer_us_at_zero": 381.55199587345123,
+    "attention_layer_us_at_max": 83272.04895019531,
+    "max_cached": 125440,
+    "layer_crossover_cached": 1003.6048342763534,
+    "step_crossover_cached": 4048.8947968453353,
+    "step_share_attention_at_max": 0.9654089062162552
+  },
+  {
+    "new_tokens": 2048,
+    "batch": 1,
+    "gdn_backend": "flashinfer",
+    "gdn_layer_us": 209.136001765728,
+    "attention_layer_us_at_zero": 133.55199992656708,
+    "attention_layer_us_at_max": 10497.83992767334,
+    "max_cached": 125440,
+    "layer_crossover_cached": 1097.0426498002387,
+    "step_crossover_cached": 6346.459164310186,
+    "step_share_attention_at_max": 0.9436050316291997
+  },
+  {
+    "new_tokens": 2048,
+    "batch": 8,
+    "gdn_backend": "flashinfer",
+    "gdn_layer_us": 852.512001991272,
+    "attention_layer_us_at_zero": 811.2799823284149,
+    "attention_layer_us_at_max": 82960.18981933594,
+    "max_cached": 125440,
+    "layer_crossover_cached": 63.79541282749832,
+    "step_crossover_cached": 2650.4206823369086,
+    "step_share_attention_at_max": 0.9700934983795267
+  },
+  {
+    "new_tokens": 2048,
+    "batch": 32,
+    "gdn_backend": "flashinfer",
+    "gdn_layer_us": 3670.064091682434,
+    "attention_layer_us_at_zero": 3237.488031387329,
+    "attention_layer_us_at_max": 330374.6032714844,
+    "max_cached": 125440,
+    "layer_crossover_cached": 171.49120381857063,
+    "step_crossover_cached": 3029.8441301179055,
+    "step_share_attention_at_max": 0.9677484398289595
+  }
+]
