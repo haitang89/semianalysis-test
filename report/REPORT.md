@@ -46,9 +46,7 @@ I time each point with CUDA events: 10 warmup calls, 50 timed repeats, one synch
 
 The numerics checks are GPU tests (`tests/test_gpu_attention_kernels.py`, `tests/test_gpu_gdn_kernels.py`). I ran them before the sweeps. They compare every backend with a plain PyTorch reference at a small shape. For GDN, a final state fed back as the initial state must reproduce the uninterrupted result.
 
-I also checked how repeatable the sweeps are. I ran the cold attention, GDN decode and GDN cold sweeps a second time, on the same instance after a restart and from the final commit (`results/raw/repeat/`). Against the first rows the kernel times agree to 0.6 percent at the median and to 3 to 5 percent at the 90th percentile of points. The worst attention point differs by 11 percent. It is a 95 us decode kernel at batch 1 over 65k tokens, a small kernel that moves with the clocks. The Triton GDN kernels came out 2 to 7 percent faster in the second run, most likely a different autotuning result in a fresh process. The FlashInfer GDN kernels agree within 0.3 percent and the attention kernels over 100 us within 4 percent.
-
-A rerun of the ceilings gave the same copy bandwidth (4277 GB/s) and the same sustained BF16 rate (675 against 673 TFLOPS). The BF16 burst peak came out 12 percent higher (804 against 716) and the FP8 peak 1 percent lower. The burst peaks are the noisier numbers, so the sustained rate stands next to them.
+I also checked how repeatable the sweeps are. I ran the cold attention, GDN decode and GDN cold sweeps a second time, on the same instance after a restart and from the final commit (`results/raw/repeat/`). Against the first rows the kernel times agree to 0.6 percent at the median and to 3 to 5 percent at the 90th percentile of points. The worst attention point differs by 11 percent. It is a 95 us decode kernel at batch 1 over 65k tokens, a small kernel that moves with the clocks. The Triton GDN kernels came out 2 to 7 percent faster in the second run, most likely a different autotuning result in a fresh process. The GDN decode kernels agree within 0.4 percent, the FlashInfer prefill kernels within 0.5 percent, and the attention kernels over 100 us within 4 percent.
 
 ### 1.6 Derived metrics
 
@@ -155,7 +153,7 @@ The third source is the engine under a closed loop load. `bench.census.step_dist
 
 With 128 output tokens per request, over 90 percent of the steps are pure decode at every concurrency. The step time is the cost of the decode batch: 9.7 ms for one sequence, 10.9 for 8, 14.1 for 32 and 24.4 for 128. Caching off gives the same within 2 percent. This matches section 2.4, where the decode GEMMs cost the same at batch 1 and 64 and only GDN and attention grow.
 
-Prefill arrives in mixed steps, and that is where caching shows. With caching off a prompt is prefilled in full. At 32 and 128 clients the mixed steps carry chunks that fill the 8192 token budget and take 340 to 450 ms. With caching on, half the prompts start with a cached prefix. At 8 and 32 clients the mixed steps carry 1k to 3k tokens and take about 180 ms. At 128 clients the budget is full either way. A mixed step delays every decode in the batch, so at 32 clients the cache halves the worst step a decode sees. The sweeps of sections 4 and 5 cover these compositions: decode batches of 1 to 256 over 1k to 4k tokens of KV, and prefill chunks from a few hundred to 8k tokens.
+Prefill arrives in mixed steps, and that is where caching shows. With caching off a prompt is prefilled in full. At 32 and 128 clients the mixed steps carry chunks that fill the 8192 token budget and take 340 to 460 ms. With caching on, half the prompts start with a cached prefix. At 8 and 32 clients the mixed steps carry 1k to 3k tokens and take about 180 ms. At 128 clients the budget is full either way. A mixed step delays every decode in the batch, so at 32 clients the cache halves the typical mixed step a decode waits behind. The sweeps of sections 4 and 5 cover these compositions: decode batches of 1 to 256 over 1k to 4k tokens of KV, and prefill chunks from a few hundred to 8k tokens.
 
 ## 3. Ceilings
 
@@ -407,13 +405,13 @@ In the warm sweeps both mixers computed the same new tokens at the same batch. G
 
 With nothing cached, an attention layer is cheaper than a GDN layer at every shape I measured. The chunked GDN kernel has a high fixed cost and runs far from its roofline (section 7). FlashAttention on a short sequence is a small, efficient kernel. The picture flips quickly with history. At 512 new tokens and batch 8, one attention layer passes one GDN layer at about 1.2k cached tokens. The 16 attention layers pass the 48 GDN layers at about 4.5k. At 16k cached tokens attention is 60 to 80 percent of the mixer time for batch 8 and 32. At 62k it is 85 to 94 percent. At 125k it is over 90 percent in every configuration with batch 8 or more.
 
-The case the task asked about is 90 percent of the pages warm. For a chunk of 784 new tokens over 7056 cached, the 16 attention layers cost the same as the 48 GDN layers at batch 1 (6.0 ms each) and 1.7x as much at batch 8 (30.4 against 18.0 ms).
+The case I care about most is 90 percent of the pages warm. For a chunk of 784 new tokens over 7056 cached, the 16 attention layers cost the same as the 48 GDN layers at batch 1 (6.0 ms each). At batch 8 they cost 1.7x as much (30.4 against 18.0 ms).
 
 Decode tells the same story with the numbers from sections 4.2 and 5.1. At batch 64, one attention layer over 4k tokens (263 us) costs as much as 2.3 GDN layers (113 us). Over 131k tokens (8.4 ms) it costs as much as 74 of them. Three quarters of the layers have a fixed size state. The quarter with a KV cache sets the cost once contexts are long.
 
 ## 7. Roofline model
 
-The stretch question was what the roofline should be. `analysis.perf_model` answers it per operator and per step. Every operator gets its FLOPs and the bytes it must move, from the model geometry and the step composition (new and cached tokens per sequence). Its roofline time is the larger of the compute time at the measured GEMM ceiling and the memory time at the measured copy bandwidth. The step time is the sum over all layers. Nothing is fitted to the measurements; the numbers are lower bounds for a serial engine. A step composition is written as groups of `COUNTx(NEW+CACHED)`, so `64x(1+4096)` is decode at batch 64 over 4k tokens.
+What should the roofline be? `analysis.perf_model` answers that per operator and per step. Every operator gets its FLOPs and the bytes it must move, from the model geometry and the step composition (new and cached tokens per sequence). Its roofline time is the larger of the compute time at the measured GEMM ceiling and the memory time at the measured copy bandwidth. The step time is the sum over all layers. Nothing is fitted to the measurements; the numbers are lower bounds for a serial engine. A step composition is written as groups of `COUNTx(NEW+CACHED)`, so `64x(1+4096)` is decode at batch 64 over 4k tokens.
 
 | scenario | new tokens | sequences | MLP ms | attention ms | GDN ms | LM head ms | norms, quant, embedding ms | total ms | memory bound share |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
@@ -527,7 +525,7 @@ One correction is needed first. The sweeps time each kernel as its own CUDA grap
 
 With the 4 us floor the isolated kernels add up to the measured step within 6 percent at every concurrency, with caching on or off. The medians are decode steps, and a decode step does not care about the cache. The compiled census shows the same from the other side: 9.1 ms of kernel time inside a 9.7 ms step at batch 1. The engine's own overhead in compiled mode is small. What separates the step from its roofline is the kernels.
 
-The decode step runs at 1.5x its roofline up to 32 clients and at 1.3x at 128. The kernel sum says where the time goes. At batch 1, 95 percent of it is the supporting ops, almost all of that the projections and the LM head streaming weights at 50 to 78 percent of the copy ceiling. By 128 clients the GDN state reads are 20 percent of the sum and attention 5 percent, and in the mixed steps the GEMMs reach their compute bound regime.
+The decode step runs at 1.5x its roofline up to 32 clients and at 1.3x at 128. The kernel sum says where the time goes. At batch 1, 95 percent of it is the supporting ops. Almost all of that is the projections and the LM head streaming weights at 50 to 78 percent of the copy ceiling. By 128 clients the GDN state reads are 20 to 28 percent of the sum and attention 5 to 7 percent. In the mixed steps the GEMMs reach their compute bound regime.
 
 So the roofline of section 7 is not a fit, but it is not far off. A decode heavy step on this GPU costs 1.3 to 1.5 times its bytes over bandwidth bound. The gap is in the small M GEMMs and the per token quantization, not in the engine.
 

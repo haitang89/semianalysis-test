@@ -78,10 +78,11 @@ uv pip install --python .venv/bin/python -e ".[dev]"
 .venv/bin/python -m analysis.process
 .venv/bin/python -m analysis.crossover
 .venv/bin/python -m analysis.perf_model
+.venv/bin/python -m analysis.sum_of_parts --launch-floor-us 4
 .venv/bin/python -m analysis.figures
 ```
 
-The analysis commands run on the development machine with the `dev` extras. The vLLM image has no matplotlib, so `analysis.figures` does not run inside the container. The committed raw rows regenerate every table and figure. `analysis.process` writes the CSVs, `analysis.crossover` the attention versus GDN crossover, `analysis.perf_model` the roofline model and kernel attainment, and `analysis.figures` the PNG and SVG figures in `report/figures`. The census tables come from `bench.census.analytic` and `bench.census.variants`. The observed side comes from `bench.census.trace_parser --trace <profiler trace> --mode eager` followed by `bench.census.diff`.
+The analysis commands run on the development machine with the `dev` extras. The vLLM image has no matplotlib, so `analysis.figures` does not run inside the container. The committed raw rows regenerate every table and figure. `analysis.process` writes the CSVs, `analysis.crossover` the attention versus GDN crossover, `analysis.perf_model` the roofline model and kernel attainment, and `analysis.figures` the PNG and SVG figures in `report/figures`. `analysis.sum_of_parts --launch-floor-us 4` writes the sum of parts table. The values 0 and 7.8 give the other two kernel sum columns of the report. The census tables come from `bench.census.analytic` and `bench.census.variants`. The observed side comes from `bench.census.trace_parser --trace <profiler trace> --mode eager` followed by `bench.census.diff`.
 
 On the GPU host the benchmarks run inside the pinned vLLM image, so kernel versions match the engine:
 
@@ -96,12 +97,12 @@ bash scripts/container.sh exec python3 -m bench.ops.run -c configs/ops_gemm.yaml
 bash scripts/container.sh exec python3 -m bench.core.floor
 ```
 
-The census against the live server needs the server started with the profiler. Eager mode gives the operator shapes and the default mode gives the production kernel set. The step distribution runs a closed loop load and reads the step compositions from the profiler's step annotations:
+The census against the live server needs the server started with the profiler. Eager mode gives the operator shapes and the default mode gives the production kernel set. The step distribution runs a closed loop load and reads the step compositions from the profiler's step annotations. With caching on, half the prompts share a 2352 token prefix so the cache gets hits. The caching off run is the same command with `--caching off` and without the two shared prefix flags:
 
 ```bash
 TRACES_DIR=$HOME/traces bash scripts/serve.sh compiled
 bash scripts/container.sh exec python3 -m bench.census.profile_driver --mode compiled --trace-dir /traces
-bash scripts/container.sh exec python3 -m bench.census.step_distribution --caching on --trace-dir /traces --concurrency 1 --concurrency 8 --concurrency 32 --concurrency 128
+bash scripts/container.sh exec python3 -m bench.census.step_distribution --caching on --trace-dir /traces --concurrency 1 --concurrency 8 --concurrency 32 --concurrency 128 --shared-prefix 2352 --shared-share 0.5
 bash scripts/container.sh exec python3 -m bench.census.trace_parser --mode compiled --append --trace /traces/<rank0 trace> --label <point>
 bash scripts/container.sh exec python3 -m bench.census.diff
 ```
