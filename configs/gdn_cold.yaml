@@ -1,0 +1,10 @@
+benchmark: gdn_cold
+regime: cold
+backends: [flashinfer, triton]
+timing: {warmup: 10, repeats: 50, graph_mode: always, point_timeout_s: 180}
+grid:
+  kind: [prefill]
+  tokens: [128, 512, 1024, 4096, 16384]
+  batch: [1, 4, 16]
+extra_grids:
+  - {kind: [prefill], tokens: [65536], batch: [1]}

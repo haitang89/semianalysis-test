@@ -12,8 +12,16 @@ Kernel = Callable[[], object]
 class TimingConfig:
     warmup: int = 10
     repeats: int = 50
+    graph_mode: str = "auto"
     graph_below_us: float = 100.0
     unstable_spread: float = 0.25
+
+    def wants_graph(self, eager_median_us: float) -> bool:
+        if self.graph_mode == "always":
+            return True
+        if self.graph_mode == "never":
+            return False
+        return eager_median_us < self.graph_below_us
 
 
 @dataclass(frozen=True)
@@ -94,7 +102,7 @@ def time_kernel(kernel: Kernel, config: TimingConfig, clock: Clock) -> Timing:
         stats = _summarize(clock.measure(kernel, config.warmup, repeats))
 
     graph_median, graph_error = None, None
-    if stats.median < config.graph_below_us:
+    if config.wants_graph(stats.median):
         try:
             graph_median = _summarize(clock.measure_graph(kernel, config.warmup, repeats)).median
         except Exception as exc:

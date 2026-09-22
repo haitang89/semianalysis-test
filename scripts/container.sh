@@ -14,7 +14,7 @@ build_args() {
   args=(
     --name "$NAME" --gpus all --network host --ipc host
     -v "$ROOT:/work" -v "$HF_CACHE:/root/.cache/huggingface"
-    -w /work -e PYTHONPATH=/work
+    -w /work -e PYTHONPATH=/work -e PYTHONUNBUFFERED=1
     -e "BENCH_IMAGE=$IMAGE" -e "BENCH_IMAGE_DIGEST=$digest"
     -e "BENCH_GIT_SHA=$sha" -e "BENCH_GIT_DIRTY=$dirty"
     --entrypoint sleep "$IMAGE" infinity

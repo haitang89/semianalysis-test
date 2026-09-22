@@ -1,0 +1,12 @@
+benchmark: attention_pages
+regime: warm
+backends: [flash_attn_3]
+timing: {warmup: 10, repeats: 50, graph_mode: always, point_timeout_s: 180}
+grid:
+  kind: [warm]
+  page_size: [16, 64, 256, 784]
+  new_tokens: [512]
+  cached: [1568, 15680, 62720]
+  batch: [1, 8]
+extra_grids:
+  - {kind: [decode], page_size: [16, 64, 256, 784], kv: [16384], batch: [64]}

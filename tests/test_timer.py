@@ -52,6 +52,13 @@ def test_unstable_point_is_measured_again_with_double_repeats():
     assert timing.repeats == 100 and timing.unstable is True
 
 
+def test_graph_mode_always_and_never_override_the_threshold():
+    always = time_kernel(noop, TimingConfig(graph_mode="always"), ModelClock(latency_us=5000.0, noise=0.0))
+    assert always.graph_median_us is not None and always.launch_overhead_us == pytest.approx(24.0, abs=3.0)
+    never = time_kernel(noop, TimingConfig(graph_mode="never"), ModelClock(latency_us=40.0))
+    assert never.graph_median_us is None and never.graph_error is None
+
+
 def test_flush_mode_is_recorded():
     timing = time_kernel(noop, TimingConfig(), ModelClock(latency_us=5000.0, flushes_l2=True))
     assert timing.l2_flush is True

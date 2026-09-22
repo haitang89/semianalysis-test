@@ -1,0 +1,12 @@
+benchmark: attention_cold
+regime: cold
+backends: [flash_attn_3]
+geometry: {page_size: 784}
+timing: {warmup: 10, repeats: 50, graph_mode: always, point_timeout_s: 180}
+grid:
+  kind: [prefill]
+  tokens: [128, 512, 1024, 4096, 16384]
+  batch: [1, 4, 16]
+extra_grids:
+  - {kind: [prefill], tokens: [65536], batch: [1]}
+  - {kind: [decode], kv: [1024, 4096, 16384, 65536, 131072], batch: [1, 16, 64, 256]}
